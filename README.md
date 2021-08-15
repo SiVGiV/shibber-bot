@@ -21,3 +21,9 @@ Database handler. Used in /polls
 
 - [IMDbPY](https://imdbpy.readthedocs.io/en/latest/usage/index.html): 
 IMDb API handler. Used in /imdb
+
+
+
+#### Useful tools
+
+[Embed creator](https://cog-creators.github.io/discord-embed-sandbox/)
