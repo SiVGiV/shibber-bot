@@ -2,7 +2,12 @@ import discord
 import discord_slash
 import json
 import time
+import os
 
+import utils
+import text_commands
+
+from dotenv import load_dotenv
 from imdb import IMDb, IMDbError
 from discord.http import Route
 from discord_slash import SlashCommand
@@ -11,13 +16,12 @@ from discord_slash.model import ButtonStyle
 from random import randint
 from tinydb import TinyDB, Query
 
-import utils
-import text_commands
-
+load_dotenv()
 client = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
 imdb_client = IMDb()
 poll_db = TinyDB("./poll_db.json")
+token = os.getenv("BOTTINGSON_TOKEN")
 
 with open("bot-values.json"):
     f = open("bot-values.json",)
@@ -236,4 +240,4 @@ async def imdb(ctx, **options):
 
 # ==========================/IMDB===============================>>>
 
-client.run("MjQwODY5OTE4OTk4NzkwMTQ1.WBDVlw.zixKEymJ9SRxu1nAjNAx1GrPncw")
+client.run(token)
