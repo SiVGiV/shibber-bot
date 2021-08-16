@@ -1,3 +1,3 @@
 
-def handle_text_commands(ctx):
+def handle_text_command(ctx):
     pass
