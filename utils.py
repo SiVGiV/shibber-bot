@@ -53,3 +53,11 @@ def ellipsis_truncate(st, max_len, mid_ellipsis=False):
         return st
     return new_st
 
+
+def list2str(var, max_items=1, join_str=", "):
+    if isinstance(var, list):
+        return join_str.join(var[:min(len(var), max_items)]).split("::")[0]
+    elif isinstance(var, str):
+        return str
+    elif isinstance(var, int) or isinstance(var, float):
+        return str(var)

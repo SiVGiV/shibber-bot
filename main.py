@@ -8,7 +8,7 @@ import utils
 import text_commands
 
 from dotenv import load_dotenv
-from imdb import IMDb, IMDbError
+from imdb import IMDb, IMDbError, helpers
 from discord.http import Route
 from discord_slash import SlashCommand
 from discord_slash.utils import manage_commands, manage_components
@@ -227,17 +227,95 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
                  )
              ])
 async def imdb(ctx, **options):
+    await ctx.defer()
+    embeds = []
     if options["search_type"] == "movie":  # if search for person
-        movies = imdb_client.search_movie(options["query"])[:5]
+        try:
+            movies = imdb_client.search_movie(options["query"])[:5]
+        except IMDbError:
+            await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
+            return
+        movie_info = []
         if movies:
-            movie = movies[0]
-            info = imdb_client.get_movie(movie.movieID)
-            print(info.infoset2keys)
-    elif options["search_type"] == "person":  # if search for movie
+            i = 1
+            for movie in movies:
+                if i <= 0:
+                    break
+                try:
+                    imdb_client.update(movie, info=[
+                        "main", "plot"
+                    ])
+                except IMDbError:
+                    await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
+                    return
+                print(movie)
+                if movie["kind"] != "movie":
+                    continue
+                movie_info.append({
+                    "title": none2str(movie["title"]),
+                    "year": none2str(movie["year"]),
+                    "genres": utils.list2str(movie["genres"], 3),
+                    "runtime": utils.list2str(movie.get("runtimes")),
+                    "plot": utils.list2str(movie.get("plot")),
+                    "rating": none2str(movie.get("rating")),
+                    "cover": none2str(movie.get("cover url")),
+                    "id": none2str(movie["imdbID"])
+                })
+                person2str = helpers.makeObject2Txt(personTxt=u"[%(name)s](https://www.imdb.com/name/nm%(personID)s/)")
+                temp_directors = movie.get("directors")
+                temp_writers = movie.get("writers")
+                temp_cast = movie.get("cast")
+                directors = []
+                writers = []
+                cast = []
+                if isinstance(temp_directors, list):
+                    for person in temp_directors:
+                        directors.append(person2str(person))
+                else:
+                    directors = person2str(temp_directors)
+                if isinstance(temp_writers, list):
+                    for person in temp_writers:
+                        writers.append(person2str(person))
+                else:
+                    writers = person2str(temp_writers)
+                if isinstance(temp_writers, list):
+                    for person in temp_cast:
+                        cast.append(person2str(person))
+                else:
+                    cast = person2str(temp_cast)
+
+                movie_info[-1].update({
+                    "directors": utils.list2str(directors, 3),
+                    "writers": utils.list2str(writers, 3),
+                    "cast": utils.list2str(cast, 5),
+                })
+                print(movie_info[-1])
+                i -= 1
+            for movie in movie_info:
+                embed = discord.Embed(title=f"{movie['title']} ({movie['year']})",
+                                      url=f"https://www.imdb.com/title/tt{movie['id']}",
+                                      description=f"""`{movie['genres']} | {movie['runtime']} min`
+{utils.ellipsis_truncate(movie['plot'], 200)}""",
+                                      color=randint(0x000000, 0xffffff))
+                embed.set_thumbnail(url=movie['cover'])
+                embed.add_field(name="Directed by:", value=movie["directors"], inline=False)
+                embed.add_field(name="Written by:", value=movie["writers"], inline=False)
+                embed.add_field(name="Cast:", value=movie["cast"], inline=False)
+                embeds.append(embed)
+                await ctx.send(embeds=embeds)
+    elif options["search_type"] == "person":  # if search for person
         persons = imdb_client.search_person(options["query"])
-    elif options["search_type"] == "person":  # if search for movie
+    elif options["search_type"] == "tv":  # if search for tv series
         shows = imdb_client.search_movie(options["query"])
 
+
 # ==========================/IMDB===============================>>>
+
+def none2str(x):
+    if x is None:
+        return ""
+    else:
+        return x
+
 
 client.run(token)
