@@ -5,7 +5,6 @@ import time
 import os
 
 import utils
-import text_commands
 
 from dotenv import load_dotenv
 from imdb import IMDb, IMDbError, helpers
@@ -20,11 +19,11 @@ load_dotenv()
 client = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
 imdb_client = IMDb()
-poll_db = TinyDB("./poll_db.json")
+poll_db = TinyDB("./databases/poll.db")
 token = os.getenv("BOTTINGSON_TOKEN")
 
 with open("bot-values.json"):
-    f = open("bot-values.json",)
+    f = open("bot-values.json", )
     _bot_values = json.load(f)
 if not _bot_values:
     _bot_values = {"slash_cmd_guilds": []}
@@ -33,14 +32,6 @@ if not _bot_values:
 @client.event
 async def on_ready():
     pass  # Log login event
-
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    if message.content.startswith("!"):
-        text_commands.handle_text_command(client, message)
 
 
 @client.event
@@ -85,6 +76,8 @@ async def youtube(ctx):
                         f"Invite expiration: <t:{int(time.time()) + 86400}:R>"
                     ), inline=False)
     await ctx.send(embed=embed)
+
+
 # ===========================/YOUTUBE===========================>>>
 
 
@@ -93,31 +86,31 @@ async def youtube(ctx):
              description="Posts a poll in the channel",
              guild_ids=_bot_values["slash_cmd_guilds"],
              options=[  # Create all of the slash command options
-                manage_commands.create_option(
-                     name="question",  description="The poll question",
+                 manage_commands.create_option(
+                     name="question", description="The poll question",
                      option_type=3, required=True),
-                manage_commands.create_option(
+                 manage_commands.create_option(
                      name="choice1", description="A poll choice",
                      option_type=3, required=True),
-                manage_commands.create_option(
+                 manage_commands.create_option(
                      name="choice2", description="A poll choice",
                      option_type=3, required=True),
-                manage_commands.create_option(
+                 manage_commands.create_option(
                      name="choice3", description="A poll choice",
                      option_type=3, required=False),
-                manage_commands.create_option(
+                 manage_commands.create_option(
                      name="choice4", description="A poll choice",
                      option_type=3, required=False),
-                manage_commands.create_option(
+                 manage_commands.create_option(
                      name="choice5", description="A poll choice",
                      option_type=3, required=False),
-                manage_commands.create_option(
+                 manage_commands.create_option(
                      name="choice6", description="A poll choice",
                      option_type=3, required=False),
-                manage_commands.create_option(
+                 manage_commands.create_option(
                      name="choice7", description="A poll choice",
                      option_type=3, required=False),
-                manage_commands.create_option(
+                 manage_commands.create_option(
                      name="choice8", description="A poll choice",
                      option_type=3, required=False)
              ])
@@ -131,14 +124,14 @@ async def poll(ctx, **options):
             choices.append(options[option])
     embed = discord.Embed(
         title=f"Poll by {ctx.author.name}#{ctx.author.discriminator}",
-        description="**"+options["question"]+"**",
+        description="**" + options["question"] + "**",
         color=randint(0x000000, 0xffffff))  # select a random color
     i = 0
     for choice in choices:  # add a field for each poll choice
         i += 1
         embed.add_field(
             name=f"{utils.get_number_emoji(i)} - {choice}",
-            value=f"0 votes (0%)\n{'░'*20}",
+            value=f"0 votes (0%)\n{'░' * 20}",
             inline=False
         )
     components = []
@@ -174,7 +167,7 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
         vote_count[int(last_vote.split("_")[1])] -= 1  # reduce vote from previous vote
     vote_count[int(ctx.custom_id.split("_")[1])] += 1  # increase vote for current vote
     poll_db.upsert({  # update database if exist, insert if doesn't
-        "poll_id": ctx.origin_message_id,   # poll_id = poll message id
+        "poll_id": ctx.origin_message_id,  # poll_id = poll message id
         "option_id": ctx.custom_id,  # option_id = poll button custom id ("poll_{N}")
         "user_id": ctx.author.id  # user_id = user who pressed a button
     }, (q.poll_id == ctx.origin_message_id) & (q.user_id == ctx.author.id))  # the query for checking if exists
@@ -191,6 +184,8 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
         new_embed.add_field(name=embed.fields[i].name, value=new_value, inline=False)
 
     await ctx.edit_origin(embed=new_embed)
+
+
 # ===========================/POLL==============================>>>
 
 
