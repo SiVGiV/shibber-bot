@@ -2,9 +2,11 @@ import discord
 import discord_slash
 import json
 import time
+from datetime import datetime as dt
 import os
 
 import utils
+from loggable import LogType, Loggable
 
 from dotenv import load_dotenv
 from imdb import IMDb, IMDbError, helpers
@@ -14,6 +16,7 @@ from discord_slash.utils import manage_commands, manage_components
 from discord_slash.model import ButtonStyle
 from random import randint
 from tinydb import TinyDB, Query
+from colorama import init, Fore
 
 load_dotenv()
 client = discord.Client(intents=discord.Intents.all())
@@ -22,8 +25,29 @@ imdb_client = IMDb()
 poll_db = TinyDB("./databases/poll.db")
 token = os.getenv("BOTTINGSON_TOKEN")
 
-with open("bot-values.json"):
-    f = open("bot-values.json", )
+now = dt.now()
+log = Loggable(
+    "./logs/" + now.strftime("%H%M%S_%d%m%Y.log"),
+    colors=[
+        "",
+        Fore.LIGHTBLUE_EX,
+        Fore.GREEN,
+        Fore.YELLOW,
+        Fore.RED
+    ],
+    log_domains=[
+        (True, False),
+        (True, True),
+        (True, True),
+        (True, True),
+        (True, True)
+    ],
+    file_wrapper=lambda st, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {lt.name} | {st}",
+    print_wrapper=lambda st, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {st}"
+)
+
+
+with open("bot-values.json") as f:
     _bot_values = json.load(f)
 if not _bot_values:
     _bot_values = {"slash_cmd_guilds": []}
@@ -31,7 +55,7 @@ if not _bot_values:
 
 @client.event
 async def on_ready():
-    pass  # Log login event
+    log.log("Bot Connected", LogType.SUCCESS)
 
 
 @client.event

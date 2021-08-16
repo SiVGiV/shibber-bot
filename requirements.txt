@@ -3,3 +3,4 @@ tinydb
 discord.py
 discord-py-slash-command
 IMDbPY
+colorama
