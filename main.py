@@ -6,7 +6,7 @@ from datetime import datetime as dt
 import os
 
 import utils
-from loggable import LogType, Loggable
+from loggable import Loggable
 
 from dotenv import load_dotenv
 from imdb import IMDb, IMDbError, helpers
@@ -25,9 +25,8 @@ imdb_client = IMDb()
 poll_db = TinyDB("./databases/poll.db")
 token = os.getenv("BOTTINGSON_TOKEN")
 
-now = dt.now()
 log = Loggable(
-    "./logs/" + now.strftime("%H%M%S_%d%m%Y.log"),
+    "./logs/" + dt.now().strftime("%H%M%S_%d%m%Y.log"),
     colors=[
         "",
         Fore.LIGHTBLUE_EX,
@@ -36,14 +35,14 @@ log = Loggable(
         Fore.RED
     ],
     log_to=[
-        {"console": True,"file": False},
-        {"console": True,"file": True},
-        {"console": True,"file": True},
-        {"console": True,"file": True},
-        {"console": True,"file": True}
+        {"console": True, "file": False},
+        {"console": True, "file": True},
+        {"console": True, "file": True},
+        {"console": True, "file": True},
+        {"console": True, "file": True}
     ],
-    file_wrapper=lambda st, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {lt.name} | {st}",
-    print_wrapper=lambda st, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {st}"
+    file_wrapper=lambda msg, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {lt.name} | {msg}",
+    print_wrapper=lambda msg, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {msg}"
 )
 
 
@@ -55,13 +54,15 @@ if not _bot_values:
 
 @client.event
 async def on_ready():
-    log.log("Bot Connected", LogType.SUCCESS)
+    log.success("Bot Connected")
 
 
 @client.event
 async def on_component(ctx: discord_slash.ComponentContext):
+    log.event(
+        f"Component event detected: [{ctx.custom_id},"
+        f"msg:{ctx.origin_message_id},channel:{ctx.channel_id}]")
     if ctx.custom_id.startswith("poll_"):
-        print("component of type 'poll' triggered")
         await handle_poll_component(ctx)
 
 
@@ -72,12 +73,15 @@ async def on_component(ctx: discord_slash.ComponentContext):
              description="Sends an invite link to a Youtube Together activity in your voice channel.",
              guild_ids=_bot_values["slash_cmd_guilds"])
 async def youtube(ctx):
+    log.event(f"/youtube command detected in [{ctx.channel_id}:{ctx.guild_id}]")
     if not ctx.guild:  # if the message was sent in a DMChannel
+        log.warning(f"/youtube: Command sent in DM. handling canceled.")
         await ctx.reply(content="Please use the command inside of a server (the bot must also be on that server).")
         return
 
     member = await ctx.guild.fetch_member(ctx.author_id)
     if not member.voice:  # if the author isn't connected to voice
+        log.warning(f"/youtube: User not connected to VC, handling canceled.")
         await ctx.send(content="You don't appear to be in any voice channel.")
         return
 
@@ -90,16 +94,22 @@ async def youtube(ctx):
         "target_application_id": "755600276941176913",
         "target_type": 2
     }
-    inv = await client.http.request(r, reason=None, json=payload)  # send an http to get the channel invite
-
-    embed = discord.Embed(color=0xff0000)  # create new embed
-    embed.set_thumbnail(url="https://i.imgur.com/6XnPq2s.png")
-    embed.add_field(name="Your Youtube Together invite is here!",
-                    value=(
-                        f"[Click here to launch Youtube Together](http://discord.gg/{inv['code']})\n"
-                        f"Invite expiration: <t:{int(time.time()) + 86400}:R>"
-                    ), inline=False)
-    await ctx.send(embed=embed)
+    try:
+        inv = await client.http.request(r, reason=None, json=payload)  # send an http to get the channel invite
+    except discord.DiscordException as e:
+        log.error(f"Error with Discord.py: {e}")
+        await ctx.send("Sorry, but there was a problem with handling your command. Try again later.")
+    else:
+        embed = discord.Embed(color=0xff0000)  # create new embed
+        embed.set_thumbnail(url="https://i.imgur.com/6XnPq2s.png")
+        embed.add_field(name="Your Youtube Together invite is here!",
+                        value=(
+                            f"[Click here to launch Youtube Together](http://discord.gg/{inv['code']})\n"
+                            f"Invite expiration: <t:{int(time.time()) + 86400}:R>"
+                        ), inline=False)
+        await ctx.send(embed=embed)
+    finally:
+        log.success("/youtube: Handling finished")
 
 
 # ===========================/YOUTUBE===========================>>>
@@ -139,17 +149,19 @@ async def youtube(ctx):
                      option_type=3, required=False)
              ])
 async def poll(ctx, **options):
+    log.event(f"/poll command detected in [{ctx.channel_id}:{ctx.guild_id}]")
     if not ctx.guild:  # if the message was sent in a DMChannel
+        log.warning(f"/poll: Command sent in DM. handling canceled.")
         await ctx.send(content="Please use the command inside of a server (the bot must also be on that server).")
         return
     choices = []
-    for option in options:  # import all options into an indexed list
-        if not option == "question":  # except for the question itself
+    for option in options:  # import all options into an indexed list except for the question
+        if not option == "question":
             choices.append(options[option])
     embed = discord.Embed(
         title=f"Poll by {ctx.author.name}#{ctx.author.discriminator}",
         description="**" + options["question"] + "**",
-        color=randint(0x000000, 0xffffff))  # select a random color
+        color=randint(0x000000, 0xffffff))
     i = 0
     for choice in choices:  # add a field for each poll choice
         i += 1
@@ -174,10 +186,13 @@ async def poll(ctx, **options):
         max_row_width = 5  # if less or equal 5, put them all in one row
     actionrows = manage_components.spread_to_rows(*components, max_in_row=max_row_width)
     await ctx.send(embed=embed, components=actionrows)
+    log.success("/poll: Handling finished.")
 
 
 async def handle_poll_component(ctx: discord_slash.ComponentContext):
+    log.event("Poll choice detected.")
     if not ctx.origin_message:  # if there is no origin message, cancel
+        log.warning("Failed to locate origin message for " + ctx.custom_id)
         return
     embed = ctx.origin_message.embeds[0]  # make the poll embed into a dict
     vote_count = []
@@ -197,7 +212,7 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
     }, (q.poll_id == ctx.origin_message_id) & (q.user_id == ctx.author.id))  # the query for checking if exists
 
     total_votes = 0  # total poll votes
-    for field in vote_count:
+    for field in vote_count:  # reconstruct embed with new values
         total_votes += field
     new_embed = discord.Embed(title=embed.title, color=embed.color, description=embed.description)
     for i in range(len(embed.fields)):
@@ -207,8 +222,12 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
         new_value += "░" * int(20 - (percent // 5))
         new_embed.add_field(name=embed.fields[i].name, value=new_value, inline=False)
 
-    await ctx.edit_origin(embed=new_embed)
-
+    try:
+        await ctx.edit_origin(embed=new_embed)
+    except discord.DiscordException:
+        log.error("Failed to edit origin message for " + ctx.custom_id)
+    else:
+        log.success("Poll choice handling finished.")
 
 # ===========================/POLL==============================>>>
 
@@ -246,12 +265,14 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
                  )
              ])
 async def imdb(ctx, **options):
+    log.event(f"/imdb command detected in [{ctx.channel_id}:{ctx.guild_id}]")
     await ctx.defer()
     embeds = []
-    if options["search_type"] == "movie":  # if search for person
+    if options["search_type"] == "movie":  # if search for movie
         try:
             movies = imdb_client.search_movie(options["query"])[:5]
-        except IMDbError:
+        except IMDbError as e:
+            log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
             await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
             return
         movie_info = []
@@ -264,10 +285,10 @@ async def imdb(ctx, **options):
                     imdb_client.update(movie, info=[
                         "main", "plot"
                     ])
-                except IMDbError:
+                except IMDbError as e:
+                    log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
                     await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
                     return
-                print(movie)
                 if movie["kind"] != "movie":
                     continue
                 movie_info.append({
@@ -308,7 +329,6 @@ async def imdb(ctx, **options):
                     "writers": utils.list2str(writers, 3),
                     "cast": utils.list2str(cast, 5),
                 })
-                print(movie_info[-1])
                 i -= 1
             for movie in movie_info:
                 embed = discord.Embed(title=f"{movie['title']} ({movie['year']})",
@@ -321,11 +341,19 @@ async def imdb(ctx, **options):
                 embed.add_field(name="Written by:", value=movie["writers"], inline=False)
                 embed.add_field(name="Cast:", value=movie["cast"], inline=False)
                 embeds.append(embed)
-                await ctx.send(embeds=embeds)
+                try:
+                    await ctx.send(embeds=embeds)
+                except discord.DiscordException as e:
+                    log.error("Couldn't reply to /imdb. Error:" + str(e))
+                else:
+                    log.success("/imdb: Handling finished.")
+
     elif options["search_type"] == "person":  # if search for person
         persons = imdb_client.search_person(options["query"])
+        pass  # todo
     elif options["search_type"] == "tv":  # if search for tv series
         shows = imdb_client.search_movie(options["query"])
+        pass  # todo
 
 
 # ==========================/IMDB===============================>>>
