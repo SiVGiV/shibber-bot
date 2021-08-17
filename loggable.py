@@ -42,7 +42,7 @@ class Loggable:
             print(self.colors[log_type] + self.print_wrapper(log_entry, log_type))
         if self.log_to[log_type]["file"]:
             with open(self.log_path, "a+") as f:
-                f.write(self.file_wrapper(log_entry, log_type))
+                f.write(self.file_wrapper(log_entry + "\n", log_type))
 
     def standard(self, msg: str):
         self.log(msg, LogType.STANDARD)
