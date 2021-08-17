@@ -44,6 +44,21 @@ class Loggable:
             with open(self.log_path, "a+") as f:
                 f.write(self.file_wrapper(log_entry, log_type))
 
+    def standard(self, msg: str):
+        self.log(msg, LogType.STANDARD)
+
+    def event(self, msg: str):
+        self.log(msg, LogType.EVENT)
+
+    def success(self, msg: str):
+        self.log(msg, LogType.SUCCESS)
+
+    def warning(self, msg: str):
+        self.log(msg, LogType.WARNING)
+
+    def error(self, msg: str):
+        self.log(msg, LogType.ERROR)
+
     @property
     def log_path(self):
         return self.__log_path
