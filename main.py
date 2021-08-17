@@ -35,12 +35,12 @@ log = Loggable(
         Fore.YELLOW,
         Fore.RED
     ],
-    log_domains=[
-        (True, False),
-        (True, True),
-        (True, True),
-        (True, True),
-        (True, True)
+    log_to=[
+        {"console": True,"file": False},
+        {"console": True,"file": True},
+        {"console": True,"file": True},
+        {"console": True,"file": True},
+        {"console": True,"file": True}
     ],
     file_wrapper=lambda st, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {lt.name} | {st}",
     print_wrapper=lambda st, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {st}"

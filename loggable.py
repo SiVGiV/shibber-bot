@@ -12,16 +12,16 @@ class LogType(enum.IntEnum):
 
 
 class Loggable:
-    def __init__(self, log_path: str, colors: list, log_domains: list, **kwargs):
+    def __init__(self, log_path: str, colors: list, log_to: list, **kwargs):
         """
         Creates a new instance of a Loggable class
         :param log_path: File path (str) to log to
         :param colors: An enum indexed list (LogType) of colorama colors
-        :param kwargs: An enum indexed list (LogType) of (bool, bool) tuples representing (console,file)
+        :param log_to: An enum indexed list (LogType) of (bool, bool) tuples representing (console,file)
         """
         self.log_path = log_path
         self.colors = colors
-        self.log_domains = log_domains
+        self.log_to = log_to
         if kwargs["print_wrapper"]:
             self.print_wrapper = kwargs["print_wrapper"]
         else:
@@ -38,9 +38,9 @@ class Loggable:
         :param log_type: Type of log item to print
         :return:
         """
-        if self.log_domains[log_type][0]:
+        if self.log_to[log_type]["console"]:
             print(self.colors[log_type] + self.print_wrapper(log_entry, log_type))
-        if self.log_domains[log_type][1]:
+        if self.log_to[log_type]["file"]:
             with open(self.log_path, "a+") as f:
                 f.write(self.file_wrapper(log_entry, log_type))
 
@@ -61,12 +61,12 @@ class Loggable:
         self.__colors = clrs
 
     @property
-    def log_domains(self):
-        return self.__log_domains
+    def log_to(self):
+        return self.__log_to
 
-    @log_domains.setter
-    def log_domains(self, ld: list):
-        self.__log_domains = ld
+    @log_to.setter
+    def log_to(self, ld: list):
+        self.__log_to = ld
 
     @property
     def print_wrapper(self):
