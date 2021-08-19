@@ -244,10 +244,6 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
                      required=True,
                      choices=[
                          manage_commands.create_choice(
-                             name="Person",
-                             value="person"
-                         ),
-                         manage_commands.create_choice(
                              name="Movie",
                              value="movie"
                          ),
@@ -289,7 +285,7 @@ async def imdb(ctx, **options):
                     log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
                     await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
                     return
-                if movie["kind"] != "movie":
+                if not movie["kind"] == "movie" and not movie["kind"] == "tv movie":
                     continue
                 movie_info.append({
                     "title": none2str(movie["title"]),
@@ -297,7 +293,6 @@ async def imdb(ctx, **options):
                     "genres": utils.list2str(movie["genres"], 3),
                     "runtime": utils.list2str(movie.get("runtimes")),
                     "plot": utils.list2str(movie.get("plot")),
-                    "rating": none2str(movie.get("rating")),
                     "cover": none2str(movie.get("cover url")),
                     "id": none2str(movie["imdbID"])
                 })
@@ -347,13 +342,87 @@ async def imdb(ctx, **options):
                     log.error("Couldn't reply to /imdb. Error:" + str(e))
                 else:
                     log.success("/imdb: Handling finished.")
-
-    elif options["search_type"] == "person":  # if search for person
-        persons = imdb_client.search_person(options["query"])
-        pass  # todo
     elif options["search_type"] == "tv":  # if search for tv series
-        shows = imdb_client.search_movie(options["query"])
-        pass  # todo
+        try:
+            shows = imdb_client.search_movie(options["query"])
+        except IMDbError as e:
+            log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
+            await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
+            return
+        show_info = []
+        if shows:
+            i = 1
+            for show in shows:
+                if i <= 0:
+                    break
+                try:
+                    imdb_client.update(show, info=[
+                        "main", "plot"
+                    ])
+                except IMDbError as e:
+                    log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
+                    await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
+                    return
+                if not show["kind"] == "tv series" and not show["kind"] == "tv mini series":
+                    continue
+                show_info.append({
+                    "title": none2str(show["title"]),
+                    "year": none2str(show["series years"]),
+                    "genres": utils.list2str(show["genres"], 3),
+                    "plot": utils.list2str(show.get("plot")),
+                    "cover": none2str(show.get("cover url")),
+                    "seasons": none2str(show.get("number of seasons")),
+                    "id": none2str(show["imdbID"])
+                })
+                person2str = helpers.makeObject2Txt(personTxt=u"[%(name)s](https://www.imdb.com/name/nm%(personID)s/)")
+                temp_writers = show.get("writer")
+                temp_creators = show.get("creator")
+                temp_cast = show.get("cast")
+                writers = []
+                creators = []
+                cast = []
+                if isinstance(temp_writers, list):
+                    for person in temp_writers:
+                        writers.append(person2str(person))
+                else:
+                    writers = person2str(temp_writers)
+                if isinstance(temp_creators, list):
+                    for person in temp_creators:
+                        creators.append(person2str(person))
+                else:
+                    creators = person2str(temp_creators)
+                if isinstance(temp_cast, list):
+                    for person in temp_cast:
+                        cast.append(person2str(person))
+                else:
+                    cast = person2str(temp_cast)
+
+                show_info[-1].update({
+                    "writers": utils.list2str(writers, 3),
+                    "creators": utils.list2str(creators, 3),
+                    "cast": utils.list2str(cast, 5),
+                })
+                i -= 1
+            for show in show_info:
+                embed = discord.Embed(title=f"{show['title']} ({show['year']})",
+                                      url=f"https://www.imdb.com/title/tt{show['id']}",
+                                      description=f"`{show['genres']}"
+                                      f""" | {show['seasons']} season{'' if show['seasons'] == 1 else 's'}`
+{utils.ellipsis_truncate(show['plot'], 200)}""",
+                                      color=randint(0x000000, 0xffffff))
+                embed.set_thumbnail(url=show['cover'])
+                if not show["creators"] is None:
+                    embed.add_field(name="Created by:", value=show["creators"], inline=False)
+                else:
+                    embed.add_field(name="Written by:", value=show["writers"], inline=False)
+                embed.add_field(name="Cast:", value=show["cast"], inline=False)
+                embeds.append(embed)
+                try:
+                    await ctx.send(embeds=embeds)
+                except discord.DiscordException as e:
+                    log.error("Couldn't reply to /imdb. Error:" + str(e))
+                else:
+                    log.success("/imdb: Handling finished.")
 
 
 # ==========================/IMDB===============================>>>
