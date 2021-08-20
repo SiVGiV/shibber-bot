@@ -262,16 +262,16 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
              ])
 async def imdb(ctx, **options):
     log.event(f"/imdb command detected in [{ctx.channel_id}:{ctx.guild_id}]")
-    await ctx.defer()
+    await ctx.defer()  # Display 'bot is thinking' message
     embeds = []
     if options["search_type"] == "movie":  # if search for movie
         try:
-            movies = imdb_client.search_movie(options["query"])[:5]
+            movies = imdb_client.search_movie(options["query"])[:5]  # Take the top 5 results
         except IMDbError as e:
             log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
             await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
             return
-        movie_info = []
+        movie_info = []  # container to hold the movie information we're gonna use for the embed
         if movies:
             i = 1
             for movie in movies:
@@ -285,7 +285,7 @@ async def imdb(ctx, **options):
                     log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
                     await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
                     return
-                if not movie["kind"] == "movie" and not movie["kind"] == "tv movie":
+                if not movie["kind"] == "movie" and not movie["kind"] == "tv movie":  # skip iteration if 'tv movie' or 'movie'
                     continue
                 movie_info.append({
                     "title": none2str(movie["title"]),
@@ -303,16 +303,19 @@ async def imdb(ctx, **options):
                 directors = []
                 writers = []
                 cast = []
+
                 if isinstance(temp_directors, list):
                     for person in temp_directors:
                         directors.append(person2str(person))
                 else:
                     directors = person2str(temp_directors)
+
                 if isinstance(temp_writers, list):
                     for person in temp_writers:
                         writers.append(person2str(person))
                 else:
                     writers = person2str(temp_writers)
+
                 if isinstance(temp_writers, list):
                     for person in temp_cast:
                         cast.append(person2str(person))
@@ -381,16 +384,19 @@ async def imdb(ctx, **options):
                 writers = []
                 creators = []
                 cast = []
+
                 if isinstance(temp_writers, list):
                     for person in temp_writers:
                         writers.append(person2str(person))
                 else:
                     writers = person2str(temp_writers)
+
                 if isinstance(temp_creators, list):
                     for person in temp_creators:
                         creators.append(person2str(person))
                 else:
                     creators = person2str(temp_creators)
+
                 if isinstance(temp_cast, list):
                     for person in temp_cast:
                         cast.append(person2str(person))
@@ -428,6 +434,11 @@ async def imdb(ctx, **options):
 # ==========================/IMDB===============================>>>
 
 def none2str(x):
+    """
+    returns a string if variable is None
+    :param x: any type variable
+    :return: empty string if None
+    """
     if x is None:
         return ""
     else:

@@ -31,9 +31,9 @@ class Loggable:
         else:
             self.file_wrapper = lambda st: st
 
-    def log(self, log_entry: str, log_type: LogType = 0) -> None:
+    def log(self, log_entry: str, log_type: LogType = 0):
         """
-
+        logs an item as a certain type
         :param log_entry: String to log
         :param log_type: Type of log item to print
         :return:

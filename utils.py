@@ -2,8 +2,11 @@ from discord_slash.utils import manage_components
 
 
 def get_number_emoji_dict(n: int):
-    # receives a number between 0 and 9 (inclusive)
-    # returns an emoji dict from the discord_slash.utils package
+    """
+    returns a passed integer as a Discord emoji dictionary
+    :param n: any integer between 0 and 9 (both inclusive)
+    :return: an emoji dictionary from the discord_slash.utils package
+    """
     if not n <= 9 and not n >= 0:
         raise ValueError("Expected number between 0 and 9 (inclusive)")
     button_numbers = [
@@ -22,8 +25,11 @@ def get_number_emoji_dict(n: int):
 
 
 def get_number_emoji(n: int) -> str:
-    # receives a number between 0 and 9 (inclusive)
-    # returns a string containing the number emoji for that number
+    """
+    returns a unicode emoji for the number passed
+    :param n: any integer between 0 and 9 (both inclusive)
+    :return: a string containing a number emoji for that number
+    """
     if not n <= 9 and not n >= 0:
         raise ValueError("Expected number between 0 and 9 (inclusive)")
     button_numbers = [
@@ -42,8 +48,13 @@ def get_number_emoji(n: int) -> str:
 
 
 def ellipsis_truncate(st, max_len, mid_ellipsis=False):
-    # receives a string and truncates it to fit max_len
-    # mid_ellipsis: True - middle ellipsis, False - end ellipsis
+    """
+    Truncates the string and adds an ellipsis
+    :param st: any string
+    :param max_len: maximum string length
+    :param mid_ellipsis: True if you want the ellipsis in the middle, false if at the end
+    :return: A truncated string
+    """
     if len(st) > max_len:
         if mid_ellipsis:
             new_st = st[:max_len/2-2] + "..." + st[max_len/2+2:]
@@ -55,6 +66,13 @@ def ellipsis_truncate(st, max_len, mid_ellipsis=False):
 
 
 def list2str(var, max_items=1, join_str=", "):
+    """
+    Concatenates list items into one string.
+    :param var: any variable
+    :param max_items: maximum number of items to concatenate
+    :param join_str: The string to join items with
+    :return: if list, returns a concatenated string.
+    """
     if isinstance(var, list):
         return join_str.join(var[:min(len(var), max_items)]).split("::")[0]
     elif isinstance(var, str):
