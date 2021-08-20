@@ -35,7 +35,7 @@ IMDb API handler. Used in /imdb
 - Bold - \**message**
 - Italics - \*message*
 - Strikethrough - \~~message~~
-- Underline - \__message__
+- Underline - \_\_message__
 - Single line code block - \`message`
 - Multiline code block - \```message```
 
