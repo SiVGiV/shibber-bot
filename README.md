@@ -31,19 +31,25 @@ IMDb API handler. Used in /imdb
 
 #### Discord Message Markdown
 
-Standard formatting:
-- Bold - **message**
-- Italics - *message*
-- Strikethrough - ~~message~~
-- Underline - __message__
-- Single line code block - `message`
-- Multiline code block - ```message```
-Tags:
+##### Standard formatting:
+- Bold - \**message**
+- Italics - \*message*
+- Strikethrough - \~~message~~
+- Underline - \__message__
+- Single line code block - \`message`
+- Multiline code block - \```message```
+
+##### Tags:
+
 - Users - <@userID>
 - Channels - <#channelID>
-Dynamic Time:
+
+##### Dynamic Time:
+
 <t:unix timestamp:modifier>
+
 Optional modifiers:
+
 - f - short datetime
 June 27, 2021 9:48 PM
 - F - long datetime
