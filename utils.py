@@ -1,4 +1,5 @@
 from discord_slash.utils import manage_components
+import requests
 
 
 def get_number_emoji_dict(n: int):
@@ -79,3 +80,24 @@ def list2str(var, max_items=1, join_str=", "):
         return str
     elif isinstance(var, int) or isinstance(var, float):
         return str(var)
+
+
+def magnet_shorten(magnet: str):
+    """
+    Shortens a torrent magnet link.
+    :param magnet: (str) a magnet string
+    :return: a shortened link
+    """
+    api_address = "http://mgnet.me/api/create"
+    api_parameters = {"m": magnet}
+    try:
+        res = requests.get(api_address, api_parameters)
+        res.raise_for_status()
+    except Exception:
+        raise NameError("Encountered an API error.")
+    else:
+        results = res.json()
+        if results["state"] == "success":
+            return results["shorturl"]
+        else:
+            raise NameError("API failed")

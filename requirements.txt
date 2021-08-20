@@ -4,3 +4,5 @@ discord.py
 discord-py-slash-command
 IMDbPY
 colorama
+tpblite
+requests

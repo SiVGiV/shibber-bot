@@ -2,20 +2,22 @@ import discord
 import discord_slash
 import json
 import time
-from datetime import datetime as dt
 import os
+from datetime import datetime as dt
 
 import utils
 from loggable import Loggable
 
 from dotenv import load_dotenv
-from imdb import IMDb, IMDbError, helpers
 from discord.http import Route
 from discord_slash import SlashCommand
 from discord_slash.utils import manage_commands, manage_components
 from discord_slash.model import ButtonStyle
-from random import randint
+
 from tinydb import TinyDB, Query
+from tpblite import TPB
+from imdb import IMDb, IMDbError, helpers
+from random import randint
 from colorama import init, Fore
 
 load_dotenv()
@@ -24,6 +26,7 @@ slash = SlashCommand(client, sync_commands=True)
 imdb_client = IMDb()
 poll_db = TinyDB("./databases/poll.db")
 token = os.getenv("BOTTINGSON_TOKEN")
+t = TPB("https://tpb.party/")
 
 log = Loggable(
     "./logs/" + dt.now().strftime("%H%M%S_%d%m%Y.log"),
@@ -44,7 +47,6 @@ log = Loggable(
     file_wrapper=lambda msg, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {lt.name} | {msg}",
     print_wrapper=lambda msg, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {msg}"
 )
-
 
 with open("bot-values.json") as f:
     _bot_values = json.load(f)
@@ -229,6 +231,7 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
     else:
         log.success("Poll choice handling finished.")
 
+
 # ===========================/POLL==============================>>>
 
 
@@ -285,7 +288,8 @@ async def imdb(ctx, **options):
                     log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
                     await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
                     return
-                if not movie["kind"] == "movie" and not movie["kind"] == "tv movie":  # skip iteration if 'tv movie' or 'movie'
+                # skip iteration if 'tv movie' or 'movie'
+                if not movie["kind"] == "movie" and not movie["kind"] == "tv movie":
                     continue
                 movie_info.append({
                     "title": none2str(movie["title"]),
@@ -413,7 +417,7 @@ async def imdb(ctx, **options):
                 embed = discord.Embed(title=f"{show['title']} ({show['year']})",
                                       url=f"https://www.imdb.com/title/tt{show['id']}",
                                       description=f"`{show['genres']}"
-                                      f""" | {show['seasons']} season{'' if show['seasons'] == 1 else 's'}`
+                                                  f""" | {show['seasons']} season{'' if show['seasons'] == 1 else 's'}`
 {utils.ellipsis_truncate(show['plot'], 200)}""",
                                       color=randint(0x000000, 0xffffff))
                 embed.set_thumbnail(url=show['cover'])
@@ -432,6 +436,50 @@ async def imdb(ctx, **options):
 
 
 # ==========================/IMDB===============================>>>
+
+
+# <<<=======================/TORRENT===============================
+@slash.slash(name="piratebay",
+             description="fetches from piratebay a list of magnet links for a search query.",
+             guild_ids=_bot_values["slash_cmd_guilds"],
+             options=[
+                 manage_commands.create_option(
+                     name="query",
+                     description="The search query",
+                     option_type=3,
+                     required=True
+                 )
+             ])
+async def piratebay(ctx, **options):
+    log.event("/torrent command received")
+    await ctx.defer()
+    tor_limit = 5
+    res_embeds = []
+    print(options["query"])
+    piratebay_torrents = t.search(options["query"])
+    # create piratebay embed
+    temp_embed = discord.Embed(title="PirateBay Results", description=f"Query: {options['query']}")
+    i = 1
+    for tor in piratebay_torrents:
+        if i > tor_limit:
+            break
+        try:
+            magnet = utils.magnet_shorten(tor.magnetlink)
+        except NameError as e:
+            log.error(str(e))
+            await ctx.send("There was an error in processing your request. Please try again later.")
+            return
+        temp_embed.add_field(
+            value=f"{i}) **Name: [{tor.title}]({magnet})**\n*{tor.category}*",
+            name=f"Size: {tor.filesize} | Seeders: {tor.seeds} | Leechers: {tor.leeches}",
+            inline=False
+        )
+        i += 1
+    res_embeds.append(temp_embed)
+    await ctx.send(embeds=res_embeds)
+
+# ==========================/TORRENT============================>>>
+
 
 def none2str(x):
     """
