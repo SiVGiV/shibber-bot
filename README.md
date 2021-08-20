@@ -27,3 +27,35 @@ IMDb API handler. Used in /imdb
 #### Useful tools
 
 [Embed creator](https://cog-creators.github.io/discord-embed-sandbox/)
+
+
+#### Discord Message Markdown
+
+Standard formatting:
+- Bold - **message**
+- Italics - *message*
+- Strikethrough - ~~message~~
+- Underline - __message__
+- Single line code block - `message`
+- Multiline code block - ```message```
+Tags:
+- Users - <@userID>
+- Channels - <#channelID>
+Dynamic Time:
+<t:unix timestamp:modifier>
+Optional modifiers:
+- f - short datetime
+June 27, 2021 9:48 PM
+- F - long datetime
+Sunday, June 27, 2021 9:48 PM
+- d - short date
+06/27/2021
+- D - long date
+June 27, 2021
+- t - short time
+9:48 PM
+- T - long time
+9:48:37 PM
+- R - relative datetime
+2 days ago
+
