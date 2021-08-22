@@ -4,6 +4,7 @@ import json
 import time
 import os
 from datetime import datetime as dt
+from random import randint
 
 import utils
 from loggable import Loggable
@@ -21,12 +22,13 @@ from random import randint
 from colorama import init, Fore
 
 load_dotenv()
+init()
 client = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
 imdb_client = IMDb()
 poll_db = TinyDB("./databases/poll.db")
 token = os.getenv("BOTTINGSON_TOKEN")
-t = TPB("https://tpb.party/")
+tpb = TPB("https://tpb.party/")
 
 log = Loggable(
     "./logs/" + dt.now().strftime("%H%M%S_%d%m%Y.log"),
@@ -451,12 +453,12 @@ async def imdb(ctx, **options):
                  )
              ])
 async def piratebay(ctx, **options):
-    log.event("/torrent command received")
+    log.event("/piratebay command received")
     await ctx.defer()
     tor_limit = 5
     res_embeds = []
     print(options["query"])
-    piratebay_torrents = t.search(options["query"])
+    piratebay_torrents = tpb.search(options["query"])
     # create piratebay embed
     temp_embed = discord.Embed(title="PirateBay Results", description=f"Query: {options['query']}")
     i = 1
@@ -477,8 +479,137 @@ async def piratebay(ctx, **options):
         i += 1
     res_embeds.append(temp_embed)
     await ctx.send(embeds=res_embeds)
+    log.success("/piratebay: handling finished")
 
 # ==========================/TORRENT============================>>>
+
+
+# <<<=======================/RANDOM=================================
+@slash.subcommand(base="random",
+                  base_description="A random choices command",
+                  name="choices",
+                  description="Chooses an item from multiple items.",
+                  options=[
+                      manage_commands.create_option(
+                          name="choice1",
+                          option_type=3,
+                          required=True,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice2",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice3",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice4",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice5",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice6",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice7",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice8",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice9",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      ),
+                      manage_commands.create_option(
+                          name="choice10",
+                          option_type=3,
+                          required=False,
+                          description="A choice."
+                      )
+                  ])
+async def _random_choices(ctx, **choices):
+    log.event("/random choices command received")
+    selection = randint(1, len(choices))
+    total_string = "**All choices (selection is marked):**\n"
+    i = 1
+    for choice in choices:
+        if i == selection:
+            total_string += "`"
+        total_string += choice
+        if i == selection:
+            total_string += "`"
+        total_string += "\n"
+        i += 1
+    await ctx.send(total_string)
+    log.success("/random choices: handling finished")
+
+
+@slash.subcommand(base="random",
+                  base_description="A random choices command",
+                  name="numbers",
+                  description="Sends a number/numbers from a range.",
+                  options=[
+                      manage_commands.create_option(
+                          name="max",
+                          option_type=4,
+                          description="The maximum number in the range (included in choice)",
+                          required=True
+                      ),
+                      manage_commands.create_option(
+                          name="min",
+                          option_type=4,
+                          description="The minimum number in the range (included), 1 if omitted.",
+                          required=False
+                      ),
+                      manage_commands.create_option(
+                          name="amount",
+                          option_type=4,
+                          description="Number of random numbers to generate (default 1).",
+                          required=False
+                      )
+                  ])
+async def _random_numbers(ctx, **options):
+    log.event("/random numbers command received")
+    numbers = []
+    if "amount" not in options:
+        options["amount"] = 1
+    elif options["amount"] <= 0:
+        options["amount"] = 1
+    for i in range(options["amount"]):
+        numbers.append(randint(1 if "min" not in options else options["min"], options["max"]))
+    if options["amount"] == 1:
+        await ctx.send(f"The random number in range "
+                       f"{1 if 'min' not in options else options['min']} -> {options['max']} is **{numbers[0]}**")
+    else:
+        await ctx.send(f"The random numbers in range "
+                       f"{1 if 'min' not in options else options['min']}"
+                       f" -> {options['max']} is **{', '.join(map(str, numbers))}**")
+    log.success("/random numbers: handling finished")
+# ==========================/RANDOM==============================>>>
 
 
 def none2str(x):
