@@ -4,7 +4,6 @@ import json
 import time
 import os
 from datetime import datetime as dt
-from random import randint
 
 import utils
 from loggable import Loggable
@@ -489,6 +488,7 @@ async def piratebay(ctx, **options):
                   base_description="A random choices command",
                   name="choices",
                   description="Chooses an item from multiple items.",
+                  guild_ids=_bot_values["slash_cmd_guilds"],
                   options=[
                       manage_commands.create_option(
                           name="choice1",
@@ -572,6 +572,7 @@ async def _random_choices(ctx, **choices):
                   base_description="A random choices command",
                   name="numbers",
                   description="Sends a number/numbers from a range.",
+                  guild_ids=_bot_values["slash_cmd_guilds"],
                   options=[
                       manage_commands.create_option(
                           name="max",
@@ -610,6 +611,41 @@ async def _random_numbers(ctx, **options):
                        f" -> {options['max']} is **{', '.join(map(str, numbers))}**")
     log.success("/random numbers: handling finished")
 # ==========================/RANDOM==============================>>>
+
+
+# <<<=======================/KESSIFY================================
+@slash.slash(name="kessify",
+             description="Kessifies text",
+             guild_ids=_bot_values["slash_cmd_guilds"],
+             options=[
+                 manage_commands.create_option(
+                     name="message",
+                     description="text to kessify",
+                     option_type=3,
+                     required=True
+                 )
+             ])
+async def kessify(ctx, message):
+    log.event("/kessify command received")
+    new_msg = ""
+    choice = randint(1, 2)
+    if choice == 1:
+        for ind in range(len(message)):
+            if bool(randint(0, 1)):
+                new_msg += message[ind].lower()
+            else:
+                new_msg += message[ind].upper()
+    else:
+        start_ind = randint(0, len(message)-1)
+        if bool(randint(0, 1)):
+            new_msg += message[:start_ind].upper()
+            new_msg += message[start_ind:].lower()
+        else:
+            new_msg += message[:start_ind].lower()
+            new_msg += message[start_ind:].upper()
+    await ctx.send(new_msg)
+    log.success("/kessify: command handled")
+# ==========================/KESSIFY=============================>>>
 
 
 def none2str(x):
