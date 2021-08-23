@@ -113,8 +113,6 @@ async def youtube(ctx):
         await ctx.send(embed=embed)
     finally:
         log.success("/youtube: Handling finished")
-
-
 # ===========================/YOUTUBE===========================>>>
 
 
@@ -231,8 +229,6 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
         log.error("Failed to edit origin message for " + ctx.custom_id)
     else:
         log.success("Poll choice handling finished.")
-
-
 # ===========================/POLL==============================>>>
 
 
@@ -434,12 +430,10 @@ async def imdb(ctx, **options):
                     log.error("Couldn't reply to /imdb. Error:" + str(e))
                 else:
                     log.success("/imdb: Handling finished.")
-
-
 # ==========================/IMDB===============================>>>
 
 
-# <<<=======================/TORRENT===============================
+# <<<=======================/PIRATEBAY===============================
 @slash.slash(name="piratebay",
              description="fetches from piratebay a list of magnet links for a search query.",
              guild_ids=_bot_values["slash_cmd_guilds"],
@@ -479,8 +473,7 @@ async def piratebay(ctx, **options):
     res_embeds.append(temp_embed)
     await ctx.send(embeds=res_embeds)
     log.success("/piratebay: handling finished")
-
-# ==========================/TORRENT============================>>>
+# ==========================/PIRATEBAY============================>>>
 
 
 # <<<=======================/RANDOM=================================
@@ -628,8 +621,8 @@ async def _random_numbers(ctx, **options):
 async def kessify(ctx, message):
     log.event("/kessify command received")
     new_msg = ""
-    choice = randint(1, 2)
-    if choice == 1:
+    choice = randint(1, 3)
+    if choice > 1:
         for ind in range(len(message)):
             if bool(randint(0, 1)):
                 new_msg += message[ind].lower()
