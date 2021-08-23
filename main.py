@@ -26,7 +26,7 @@ client = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
 imdb_client = IMDb()
 poll_db = TinyDB("./databases/poll.db")
-token = os.getenv("BOTTINGSON_TOKEN")
+token = os.getenv("SHIBBER_TOKEN")
 tpb = TPB("https://tpb.party/")
 
 log = Loggable(
