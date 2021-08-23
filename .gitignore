@@ -1,3 +1,4 @@
 # Envoirenment file
 .env
+venv
 databases
