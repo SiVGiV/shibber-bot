@@ -6,3 +6,4 @@ IMDbPY
 colorama
 tpblite
 requests
+mal-api

@@ -1,3 +1,5 @@
+import asyncio
+
 import discord
 import discord_slash
 import json
@@ -17,6 +19,7 @@ from discord_slash.model import ButtonStyle
 from tinydb import TinyDB, Query
 from tpblite import TPB
 from imdb import IMDb, IMDbError, helpers
+from mal import Anime, AnimeSearch
 from random import randint
 from colorama import init, Fore
 
@@ -431,6 +434,51 @@ async def imdb(ctx, **options):
                 else:
                     log.success("/imdb: Handling finished.")
 # ==========================/IMDB===============================>>>
+
+
+# <<<=======================/ANIME===================================
+@slash.slash(
+    name="anime",
+    description="Searches MyAnimeList for weeb shit.",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="search_query",
+            description="Query to search for on MyAnimeList",
+            option_type=3,
+            required=True
+        )
+    ]
+)
+async def anime(ctx, **options):
+    await ctx.defer()
+    await asyncio.sleep(3)
+    log.event("/Anime command received.")
+    search = AnimeSearch(options["search_query"])
+    if not search:
+        log.warning("/Anime: Couldn't find a result.")
+        log.event("/Anime: Handling finished.")
+        await ctx.send(f"Couldn't find a result for \"{options['search_query']}\"")
+        return
+    try:
+        result = Anime(search.results[0].mal_id)
+    except Exception as e:
+        log.error(e.with_traceback())
+        log.error("Stopping /Anime execution")
+        await ctx.send("Error encountered while executing the /Anime command.")
+        return
+
+    # title_english, title_japanese, url, image_url, genres, synopsis
+    embed = discord.Embed(
+        title=f"{result.title_english} {'('+result.title_japanese+')' if result.title_japanese is not None else ''}",
+        url=result.url,
+        description=f"`{utils.list2str(result.genres,3)}`\n" + utils.list2str(result.synopsis.split("."), 3, ".") + "."
+    )
+    embed.set_thumbnail(url=result.image_url)
+    embed.set_footer(text="ʸᵒᵘ ᶠᵘᶜᵏᶦⁿᵍ ʷᵉᵉᵇ")
+    await ctx.send(embed=embed)
+    log.success("/Anime: Handling finished")
+# ==========================/ANIME================================>>>
 
 
 # <<<=======================/PIRATEBAY===============================
