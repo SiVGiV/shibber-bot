@@ -1,7 +1,6 @@
 from discord_slash.utils import manage_components
 import requests
 
-
 def get_number_emoji_dict(n: int):
     """
     returns a passed integer as a Discord emoji dictionary

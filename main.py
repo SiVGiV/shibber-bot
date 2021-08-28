@@ -8,6 +8,7 @@ import os
 from datetime import datetime as dt
 
 import utils
+import conversion
 from loggable import Loggable
 
 from dotenv import load_dotenv
@@ -116,6 +117,8 @@ async def youtube(ctx):
         await ctx.send(embed=embed)
     finally:
         log.success("/youtube: Handling finished")
+
+
 # ===========================/YOUTUBE===========================>>>
 
 
@@ -232,6 +235,8 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
         log.error("Failed to edit origin message for " + ctx.custom_id)
     else:
         log.success("Poll choice handling finished.")
+
+
 # ===========================/POLL==============================>>>
 
 
@@ -335,8 +340,8 @@ async def imdb(ctx, **options):
             for movie in movie_info:
                 embed = discord.Embed(title=f"{movie['title']} ({movie['year']})",
                                       url=f"https://www.imdb.com/title/tt{movie['id']}",
-                                      description=f"""`{movie['genres']} | {movie['runtime']} min`
-{utils.ellipsis_truncate(movie['plot'], 200)}""",
+                                      description=f"`{movie['genres']} | {movie['runtime']} min`\n"
+                                                  f"{utils.ellipsis_truncate(movie['plot'], 200)}",
                                       color=randint(0x000000, 0xffffff))
                 embed.set_thumbnail(url=movie['cover'])
                 embed.add_field(name="Directed by:", value=movie["directors"], inline=False)
@@ -433,6 +438,8 @@ async def imdb(ctx, **options):
                     log.error("Couldn't reply to /imdb. Error:" + str(e))
                 else:
                     log.success("/imdb: Handling finished.")
+
+
 # ==========================/IMDB===============================>>>
 
 
@@ -463,21 +470,24 @@ async def anime(ctx, **options):
     try:
         result = Anime(search.results[0].mal_id)
     except Exception as e:
-        log.error(e.with_traceback())
+        log.error(str(e))
         log.error("Stopping /Anime execution")
         await ctx.send("Error encountered while executing the /Anime command.")
         return
 
     # title_english, title_japanese, url, image_url, genres, synopsis
     embed = discord.Embed(
-        title=f"{result.title_english} {'('+result.title_japanese+')' if result.title_japanese is not None else ''}",
+        title=f"{result.title_english}"
+              f"{'(' + result.title_japanese + ')' if result.title_japanese is not None else ''}",
         url=result.url,
-        description=f"`{utils.list2str(result.genres,3)}`\n" + utils.list2str(result.synopsis.split("."), 3, ".") + "."
+        description=f"`{utils.list2str(result.genres, 3)}`\n{utils.list2str(result.synopsis.split('.'), 3, '.')}."
     )
     embed.set_thumbnail(url=result.image_url)
     embed.set_footer(text="ʸᵒᵘ ᶠᵘᶜᵏᶦⁿᵍ ʷᵉᵉᵇ")
     await ctx.send(embed=embed)
     log.success("/Anime: Handling finished")
+
+
 # ==========================/ANIME================================>>>
 
 
@@ -521,6 +531,8 @@ async def piratebay(ctx, **options):
     res_embeds.append(temp_embed)
     await ctx.send(embeds=res_embeds)
     log.success("/piratebay: handling finished")
+
+
 # ==========================/PIRATEBAY============================>>>
 
 
@@ -651,6 +663,8 @@ async def _random_numbers(ctx, **options):
                        f"{1 if 'min' not in options else options['min']}"
                        f" -> {options['max']} is **{', '.join(map(str, numbers))}**")
     log.success("/random numbers: handling finished")
+
+
 # ==========================/RANDOM==============================>>>
 
 
@@ -677,7 +691,7 @@ async def kessify(ctx, message):
             else:
                 new_msg += message[ind].upper()
     else:
-        start_ind = randint(0, len(message)-1)
+        start_ind = randint(0, len(message) - 1)
         if bool(randint(0, 1)):
             new_msg += message[:start_ind].upper()
             new_msg += message[start_ind:].lower()
@@ -686,7 +700,268 @@ async def kessify(ctx, message):
             new_msg += message[start_ind:].upper()
     await ctx.send(new_msg)
     log.success("/kessify: command handled")
+
+
 # ==========================/KESSIFY=============================>>>
+
+
+# <<<=======================/CONVERT================================
+
+@slash.subcommand(
+    base="convert",
+    name="length",
+    description="Converts length units",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="quantity",
+            option_type=10,
+            required=True,
+            description="The conversion quantity"
+        ),
+        manage_commands.create_option(
+            name="from",
+            option_type=3,
+            required=True,
+            description="Convert from",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.length.items()
+            )
+        ),
+        manage_commands.create_option(
+            name="to",
+            option_type=3,
+            required=True,
+            description="Convert to",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.length.items()
+            )
+        )
+    ]
+)
+async def _convert_length(ctx, **options):
+    log.event("/convert length command received")
+    await ctx.send(
+        f"{options['quantity']} {conversion.length[options['from']]['name']} "
+        f"is {conversion.convert_length(options['quantity'], options['from'], options['to']):.2f}"
+        f" {conversion.length[options['to']]['name']}")
+
+
+@slash.subcommand(
+    base="convert",
+    name="weight",
+    description="Converts weight units",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="quantity",
+            option_type=10,
+            required=True,
+            description="The conversion quantity"
+        ),
+        manage_commands.create_option(
+            name="from",
+            option_type=3,
+            required=True,
+            description="Convert from",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.weight.items()
+            )
+        ),
+        manage_commands.create_option(
+            name="to",
+            option_type=3,
+            required=True,
+            description="Convert to",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.weight.items()
+            )
+        )
+    ]
+)
+async def _convert_weight(ctx, **options):
+    log.event("/convert weight command received")
+    await ctx.send(
+        f"{options['quantity']} {conversion.weight[options['from']]['name']} "
+        f"is {conversion.convert_weight(options['quantity'], options['from'], options['to']):.2f}"
+        f" {conversion.weight[options['to']]['name']}")
+
+
+@slash.subcommand(
+    base="convert",
+    name="area",
+    description="Converts area units",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="quantity",
+            option_type=10,
+            required=True,
+            description="The conversion quantity"
+        ),
+        manage_commands.create_option(
+            name="from",
+            option_type=3,
+            required=True,
+            description="Convert from",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.area.items()
+            )
+        ),
+        manage_commands.create_option(
+            name="to",
+            option_type=3,
+            required=True,
+            description="Convert to",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.area.items()
+            )
+        )
+    ]
+)
+async def _convert_area(ctx, **options):
+    log.event("/convert area command received")
+    await ctx.send(
+        f"{options['quantity']} {conversion.area[options['from']]['name']} "
+        f"is {conversion.convert_area(options['quantity'], options['from'], options['to']):.2f}"
+        f" {conversion.area[options['to']]['name']}")
+
+
+@slash.subcommand(
+    base="convert",
+    name="speed",
+    description="Converts speed units",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="quantity",
+            option_type=10,
+            required=True,
+            description="The conversion quantity"
+        ),
+        manage_commands.create_option(
+            name="from",
+            option_type=3,
+            required=True,
+            description="Convert from",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.speed.items()
+            )
+        ),
+        manage_commands.create_option(
+            name="to",
+            option_type=3,
+            required=True,
+            description="Convert to",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.speed.items()
+            )
+        )
+    ]
+)
+async def _convert_speed(ctx, **options):
+    log.event("/convert speed command received")
+    await ctx.send(
+        f"{options['quantity']} {conversion.speed[options['from']]['name']} "
+        f"is {conversion.convert_speed(options['quantity'], options['from'], options['to']):.2f}"
+        f" {conversion.speed[options['to']]['name']}")
+
+
+@slash.subcommand(
+    base="convert",
+    name="volume",
+    description="Converts volume units",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="quantity",
+            option_type=10,
+            required=True,
+            description="The conversion quantity"
+        ),
+        manage_commands.create_option(
+            name="from",
+            option_type=3,
+            required=True,
+            description="Convert from",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.volume.items()
+            )
+        ),
+        manage_commands.create_option(
+            name="to",
+            option_type=3,
+            required=True,
+            description="Convert to",
+            choices=map(
+                lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
+                conversion.volume.items()
+            )
+        )
+    ]
+)
+async def _convert_volume(ctx, **options):
+    log.event("/convert volume command received")
+    await ctx.send(
+        f"{options['quantity']} {conversion.volume[options['from']]['name']} "
+        f"is {conversion.convert_volume(options['quantity'], options['from'], options['to']):.2f}"
+        f" {conversion.volume[options['to']]['name']}")
+
+
+@slash.subcommand(
+    base="convert",
+    name="temperature",
+    description="Converts temperature units",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="quantity",
+            option_type=10,
+            required=True,
+            description="The conversion quantity"
+        ),
+        manage_commands.create_option(
+            name="from",
+            option_type=3,
+            required=True,
+            description="Convert from",
+            choices=[
+                manage_commands.create_choice(name="celsius", value="c"),
+                manage_commands.create_choice(name="fahrenheit", value="f"),
+                manage_commands.create_choice(name="kelvin", value="k")
+            ]
+        ),
+        manage_commands.create_option(
+            name="to",
+            option_type=3,
+            required=True,
+            description="Convert to",
+            choices=[
+                manage_commands.create_choice(name="celsius", value="c"),
+                manage_commands.create_choice(name="fahrenheit", value="f"),
+                manage_commands.create_choice(name="kelvin", value="k")
+            ]
+        )
+    ]
+)
+async def _convert_temperature(ctx, **options):
+    log.event("/convert temperature command received")
+    await ctx.send(
+        f"{options['quantity']} {conversion.temperature[options['from']]['name']} "
+        f"is {conversion.convert_temperature(options['quantity'], options['from'], options['to']):.2f}"
+        f" {conversion.temperature[options['to']]['name']}")
+
+
+# ==========================/CONVERT=============================>>>
 
 
 def none2str(x):
