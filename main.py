@@ -17,7 +17,7 @@ from discord_slash import SlashCommand
 from discord_slash.utils import manage_commands, manage_components
 from discord_slash.model import ButtonStyle
 
-from tinydb import TinyDB, Query
+from tinydb import TinyDB, where
 from tpblite import TPB
 from imdb import IMDb, IMDbError, helpers
 from mal import Anime, AnimeSearch
@@ -206,9 +206,14 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
     for field in embed.fields:  # scrub current embed for data
         vote_count.append(int(field.value.split()[0])),  # split by whitespace, take first choice = vote count
 
-    q = Query()
-    if poll_db.contains((q.poll_id == ctx.origin_message_id) & (q.user_id == ctx.author.id)):  # if user voted on msg
-        res = poll_db.search((q.poll_id == ctx.origin_message_id) & (q.user_id == ctx.author.id))  # look it up
+    if poll_db.contains(
+            (where('poll_id') == ctx.origin_message_id) &
+            (where('user_id') == ctx.author.id)):  # if voted on msg
+
+        res = poll_db.search(
+            (where('poll_id') == ctx.origin_message_id) &
+            (where('user_id') == ctx.author.id))  # look it up
+
         last_vote = res[0]["option_id"]  # get the last voted item
         vote_count[int(last_vote.split("_")[1])] -= 1  # reduce vote from previous vote
     vote_count[int(ctx.custom_id.split("_")[1])] += 1  # increase vote for current vote
@@ -216,7 +221,8 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
         "poll_id": ctx.origin_message_id,  # poll_id = poll message id
         "option_id": ctx.custom_id,  # option_id = poll button custom id ("poll_{N}")
         "user_id": ctx.author.id  # user_id = user who pressed a button
-    }, (q.poll_id == ctx.origin_message_id) & (q.user_id == ctx.author.id))  # the query for checking if exists
+    }, (where('poll_id') == ctx.origin_message_id) &
+       (where('user_id') == ctx.author.id))  # the query for checking if exists
 
     total_votes = 0  # total poll votes
     for field in vote_count:  # reconstruct embed with new values
@@ -724,20 +730,20 @@ async def kessify(ctx, message):
             option_type=3,
             required=True,
             description="Convert from",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.length.items()
-            )
+            ))
         ),
         manage_commands.create_option(
             name="to",
             option_type=3,
             required=True,
             description="Convert to",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.length.items()
-            )
+            ))
         )
     ]
 )
@@ -766,20 +772,20 @@ async def _convert_length(ctx, **options):
             option_type=3,
             required=True,
             description="Convert from",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.weight.items()
-            )
+            ))
         ),
         manage_commands.create_option(
             name="to",
             option_type=3,
             required=True,
             description="Convert to",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.weight.items()
-            )
+            ))
         )
     ]
 )
@@ -808,20 +814,20 @@ async def _convert_weight(ctx, **options):
             option_type=3,
             required=True,
             description="Convert from",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.area.items()
-            )
+            ))
         ),
         manage_commands.create_option(
             name="to",
             option_type=3,
             required=True,
             description="Convert to",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.area.items()
-            )
+            ))
         )
     ]
 )
@@ -850,20 +856,20 @@ async def _convert_area(ctx, **options):
             option_type=3,
             required=True,
             description="Convert from",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.speed.items()
-            )
+            ))
         ),
         manage_commands.create_option(
             name="to",
             option_type=3,
             required=True,
             description="Convert to",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.speed.items()
-            )
+            ))
         )
     ]
 )
@@ -892,20 +898,20 @@ async def _convert_speed(ctx, **options):
             option_type=3,
             required=True,
             description="Convert from",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.volume.items()
-            )
+            ))
         ),
         manage_commands.create_option(
             name="to",
             option_type=3,
             required=True,
             description="Convert to",
-            choices=map(
+            choices=list(map(
                 lambda x: manage_commands.create_choice(name=x[1]['name'], value=x[0]),
                 conversion.volume.items()
-            )
+            ))
         )
     ]
 )
