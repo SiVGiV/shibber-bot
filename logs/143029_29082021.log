@@ -1,0 +1,6 @@
+[14:30:32 29/08/21] SUCCESS | Bot Connected
+[14:30:45 29/08/21] EVENT | /convert currency command received
+[14:30:45 29/08/21] ERROR | Error occurred with currency conversion, handling canceled
+[14:30:57 29/08/21] EVENT | Component event detected: [poll_0,msg:881471682148188210,channel:865989456511107113]
+[14:30:57 29/08/21] EVENT | Poll choice detected.
+[14:30:57 29/08/21] SUCCESS | Poll choice handling finished.

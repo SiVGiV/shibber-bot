@@ -1,3 +1,5 @@
+import requests
+
 length = {
     "mm": {
         "name": "millimeters",
@@ -186,3 +188,31 @@ def convert_temperature(quantity: float, fr: str, to: str):
         elif to == "c":
             return (quantity - 32) * 5 / 9
     return quantity
+
+
+class CurrencyConverter:
+    def __init__(self, crypto_key):
+        url = "https://api.exchangerate-api.com/v4/latest/USD"
+        crypto_url = "http://api.coinlayer.com/api/live?access_key=" + crypto_key
+        self.data = requests.get(url).json()
+        self.crypto_data = requests.get(crypto_url).json()
+        self.currencies = self.data["rates"]
+        temp = map(
+            lambda x: (x[0], 1 / x[1] if x[1] != 0 else 0),
+            self.crypto_data["rates"].items()
+        )
+        self.currencies.update(temp)
+
+    def convert(self, from_currency, to_currency, amount):
+        # first convert it into USD if it is not in USD.
+        # because our base currency is USD
+        from_currency = from_currency.upper()
+        to_currency = to_currency.upper()
+        if from_currency not in self.currencies or to_currency not in self.currencies:
+            raise ValueError("A currency code passed does not exist")
+        if from_currency != 'USD':
+            amount /= self.currencies[from_currency]
+
+            # limiting the precision to 4 decimal places
+        amount = round(amount * self.currencies[to_currency], 4)
+        return amount

@@ -1,5 +1,6 @@
 # System imports
 import asyncio
+import re
 import time
 import os
 import json
@@ -32,6 +33,7 @@ slash = SlashCommand(client, sync_commands=True)
 imdb_client = IMDb()
 poll_db = TinyDB("./databases/poll.db")
 token = os.getenv("SHIBBER_TOKEN")
+currency_convert = conversion.CurrencyConverter(os.getenv("COINLAYER_TOKEN"))
 tpb = TPB("https://tpb.party/")
 log = Loggable(
     "./logs/" + dt.now().strftime("%H%M%S_%d%m%Y.log"),
@@ -52,6 +54,7 @@ log = Loggable(
     file_wrapper=lambda msg, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {lt.name} | {msg}",
     print_wrapper=lambda msg, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {msg}"
 )
+
 with open("bot-values.json") as f:
     _bot_values = json.load(f)
 if not _bot_values:
@@ -966,6 +969,47 @@ async def _convert_temperature(ctx, **options):
         f" {conversion.temperature[options['to']]['name']}")
 
 
+@slash.subcommand(
+    base="convert",
+    name="currency",
+    description="Converts from a currency to another",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="quantity",
+            option_type=10,
+            required=True,
+            description="Amount to convert"
+        ),
+        manage_commands.create_option(
+            name="from",
+            option_type=3,
+            required=True,
+            description="3 Letter code of currency to convert from"
+        ),
+        manage_commands.create_option(
+            name="to",
+            option_type=3,
+            required=True,
+            description="3 Letter code of currency to convert to"
+        )
+    ]
+)
+async def _convert_currency(ctx, **options):
+    log.event("/convert currency command received")
+    check_pattern = r"\A[a-zA-Z]{3}\Z"
+    if not re.search(check_pattern, options["from"]) or not re.search(check_pattern, options["to"]):
+        log.warning("Handling canceled due to false currency string.")
+        await ctx.send("One of the currency codes specified was incorrect (not 3 letters)")
+        return
+    try:
+        result = currency_convert.convert(options["from"], options["to"], options["quantity"])
+    except ValueError:
+        log.error("Error occurred with currency conversion, handling canceled")
+        await ctx.send("An error occurred converting, likely due to wrong currency codes.")
+        return
+    await ctx.send(f"{options['quantity']} {options['from'].upper()} = {result:.2f} {options['to'].upper()}")
+    log.success("/convert currency handling finished")
 # ==========================/CONVERT=============================>>>
 
 
