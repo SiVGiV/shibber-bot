@@ -52,6 +52,10 @@ weight = {
     "st": {
         "name": "stone",
         "base_value": 6350.29
+    },
+    "ton": {
+        "name": "tonnes",
+        "base_value": 1000000
     }
 }
 
@@ -94,6 +98,10 @@ speed = {
     "mph": {
         "name": "miles per hour",
         "base_value": 1.609
+    },
+    "knots": {
+        "name": "knots",
+        "base_value": 0.5399
     }
 }
 
