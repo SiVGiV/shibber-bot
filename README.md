@@ -7,7 +7,7 @@ A Discord bot made mainly for The Wankbunker server
 The main bot library
 
 
-- [Discord py slash commands](https://discord-py-slash-command.readthedocs.io/en/latest/): 
+- [Discord py slash commands](https://discord-py-slash-command.readthedocs.io/en/components/quickstart.html): 
 A supporting library for discord.py, handles slash commands, buttons and selectors
 
 
