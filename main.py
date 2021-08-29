@@ -1,22 +1,22 @@
+# System imports
 import asyncio
-
-import discord
-import discord_slash
-import json
 import time
 import os
+import json
+from dotenv import load_dotenv
 from datetime import datetime as dt
-
-import utils
+# Project imports
+from utils import *
 import conversion
 from loggable import Loggable
-
-from dotenv import load_dotenv
+# Framework imports
+import discord
+import discord_slash
 from discord.http import Route
 from discord_slash import SlashCommand
 from discord_slash.utils import manage_commands, manage_components
 from discord_slash.model import ButtonStyle
-
+# Helper package imports
 from tinydb import TinyDB, where
 from tpblite import TPB
 from imdb import IMDb, IMDbError, helpers
@@ -24,6 +24,7 @@ from mal import Anime, AnimeSearch
 from random import randint
 from colorama import init, Fore
 
+# Package initializations
 load_dotenv()
 init()
 client = discord.Client(intents=discord.Intents.all())
@@ -32,7 +33,6 @@ imdb_client = IMDb()
 poll_db = TinyDB("./databases/poll.db")
 token = os.getenv("SHIBBER_TOKEN")
 tpb = TPB("https://tpb.party/")
-
 log = Loggable(
     "./logs/" + dt.now().strftime("%H%M%S_%d%m%Y.log"),
     colors=[
@@ -52,7 +52,6 @@ log = Loggable(
     file_wrapper=lambda msg, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {lt.name} | {msg}",
     print_wrapper=lambda msg, lt: f"[{dt.now().strftime('%H:%M:%S %d/%m/%y')}] {msg}"
 )
-
 with open("bot-values.json") as f:
     _bot_values = json.load(f)
 if not _bot_values:
@@ -173,7 +172,7 @@ async def poll(ctx, **options):
     for choice in choices:  # add a field for each poll choice
         i += 1
         embed.add_field(
-            name=f"{utils.get_number_emoji(i)} - {choice}",
+            name=f"{get_number_emoji(i)} - {choice}",
             value=f"0 votes (0%)\n{'░' * 20}",
             inline=False
         )
@@ -182,8 +181,8 @@ async def poll(ctx, **options):
         components.append(
             manage_components.create_button(  # create a button for each option
                 style=ButtonStyle.grey,
-                label=utils.ellipsis_truncate(choices[i], 30, mid_ellipsis=True),
-                emoji=utils.get_number_emoji_dict(i + 1),
+                label=ellipsis_truncate(choices[i], 30, mid_ellipsis=True),
+                emoji=get_number_emoji_dict(i + 1),
                 custom_id=f"poll_{i}"
             )
         )
@@ -305,9 +304,9 @@ async def imdb(ctx, **options):
                 movie_info.append({
                     "title": none2str(movie["title"]),
                     "year": none2str(movie["year"]),
-                    "genres": utils.list2str(movie["genres"], 3),
-                    "runtime": utils.list2str(movie.get("runtimes")),
-                    "plot": utils.list2str(movie.get("plot")),
+                    "genres": list2str(movie["genres"], 3),
+                    "runtime": list2str(movie.get("runtimes")),
+                    "plot": list2str(movie.get("plot")),
                     "cover": none2str(movie.get("cover url")),
                     "id": none2str(movie["imdbID"])
                 })
@@ -338,16 +337,16 @@ async def imdb(ctx, **options):
                     cast = person2str(temp_cast)
 
                 movie_info[-1].update({
-                    "directors": utils.list2str(directors, 3),
-                    "writers": utils.list2str(writers, 3),
-                    "cast": utils.list2str(cast, 5),
+                    "directors": list2str(directors, 3),
+                    "writers": list2str(writers, 3),
+                    "cast": list2str(cast, 5),
                 })
                 i -= 1
             for movie in movie_info:
                 embed = discord.Embed(title=f"{movie['title']} ({movie['year']})",
                                       url=f"https://www.imdb.com/title/tt{movie['id']}",
                                       description=f"`{movie['genres']} | {movie['runtime']} min`\n"
-                                                  f"{utils.ellipsis_truncate(movie['plot'], 200)}",
+                                                  f"{ellipsis_truncate(movie['plot'], 200)}",
                                       color=randint(0x000000, 0xffffff))
                 embed.set_thumbnail(url=movie['cover'])
                 embed.add_field(name="Directed by:", value=movie["directors"], inline=False)
@@ -386,8 +385,8 @@ async def imdb(ctx, **options):
                 show_info.append({
                     "title": none2str(show["title"]),
                     "year": none2str(show["series years"]),
-                    "genres": utils.list2str(show["genres"], 3),
-                    "plot": utils.list2str(show.get("plot")),
+                    "genres": list2str(show["genres"], 3),
+                    "plot": list2str(show.get("plot")),
                     "cover": none2str(show.get("cover url")),
                     "seasons": none2str(show.get("number of seasons")),
                     "id": none2str(show["imdbID"])
@@ -419,9 +418,9 @@ async def imdb(ctx, **options):
                     cast = person2str(temp_cast)
 
                 show_info[-1].update({
-                    "writers": utils.list2str(writers, 3),
-                    "creators": utils.list2str(creators, 3),
-                    "cast": utils.list2str(cast, 5),
+                    "writers": list2str(writers, 3),
+                    "creators": list2str(creators, 3),
+                    "cast": list2str(cast, 5),
                 })
                 i -= 1
             for show in show_info:
@@ -429,7 +428,7 @@ async def imdb(ctx, **options):
                                       url=f"https://www.imdb.com/title/tt{show['id']}",
                                       description=f"`{show['genres']}"
                                                   f""" | {show['seasons']} season{'' if show['seasons'] == 1 else 's'}`
-{utils.ellipsis_truncate(show['plot'], 200)}""",
+{ellipsis_truncate(show['plot'], 200)}""",
                                       color=randint(0x000000, 0xffffff))
                 embed.set_thumbnail(url=show['cover'])
                 if not show["creators"] is None:
@@ -486,7 +485,7 @@ async def anime(ctx, **options):
         title=f"{result.title_english}"
               f"{'(' + result.title_japanese + ')' if result.title_japanese is not None else ''}",
         url=result.url,
-        description=f"`{utils.list2str(result.genres, 3)}`\n{utils.list2str(result.synopsis.split('.'), 3, '.')}."
+        description=f"`{list2str(result.genres, 3)}`\n{list2str(result.synopsis.split('.'), 3, '.')}."
     )
     embed.set_thumbnail(url=result.image_url)
     embed.set_footer(text="ʸᵒᵘ ᶠᵘᶜᵏᶦⁿᵍ ʷᵉᵉᵇ")
@@ -523,7 +522,7 @@ async def piratebay(ctx, **options):
         if i > tor_limit:
             break
         try:
-            magnet = utils.magnet_shorten(tor.magnetlink)
+            magnet = magnet_shorten(tor.magnetlink)
         except NameError as e:
             log.error(str(e))
             await ctx.send("There was an error in processing your request. Please try again later.")
@@ -970,16 +969,4 @@ async def _convert_temperature(ctx, **options):
 # ==========================/CONVERT=============================>>>
 
 
-def none2str(x):
-    """
-    returns a string if variable is None
-    :param x: any type variable
-    :return: empty string if None
-    """
-    if x is None:
-        return ""
-    else:
-        return x
-
-
-client.run(token)
+client.run(token)  # run the bot

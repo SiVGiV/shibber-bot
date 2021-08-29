@@ -1,6 +1,7 @@
 from discord_slash.utils import manage_components
 import requests
 
+
 def get_number_emoji_dict(n: int):
     """
     returns a passed integer as a Discord emoji dictionary
@@ -100,3 +101,15 @@ def magnet_shorten(magnet: str):
             return results["shorturl"]
         else:
             raise NameError("API failed")
+
+
+def none2str(x):
+    """
+    returns a string if variable is None
+    :param x: any type variable
+    :return: empty string if None
+    """
+    if x is None:
+        return ""
+    else:
+        return x
