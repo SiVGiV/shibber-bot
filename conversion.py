@@ -198,7 +198,7 @@ class CurrencyConverter:
         if "rates" not in self.data:
             self.data["rates"].append({})
         self.crypto_data = requests.get(crypto_url).json()
-        if  "rates" not in self.crypto_data:
+        if "rates" not in self.crypto_data:
             self.crypto_data["rates"].append({})
         self.currencies = self.data["rates"]
         temp = map(
