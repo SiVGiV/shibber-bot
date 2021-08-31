@@ -1019,14 +1019,29 @@ async def _convert_currency(ctx, **options):
 # ==========================/CONVERT=============================>>>
 
 
-# <<<=======================SEND LOVE===============================
+# <<<=======================SUMMON===============================
 @slash.context_menu(target=ContextMenuType.USER,
-                    name="heart",
+                    name="Summon",
                     guild_ids=_bot_values["slash_cmd_guilds"])
-async def heart(ctx: MenuContext):
-    await ctx.target_author.send("Someone sent you a  ❤️")
-    await ctx.send("Heart sent to <@"+str(ctx.target_author.id)+">", hidden=True)
-# ==========================SEND LOVE============================>>>
+async def summon(ctx: MenuContext):
+    member = await ctx.guild.fetch_member(ctx.author_id)
+    if not member.voice:
+        log.warning("Couldn't send a summon - user not in a voice channel")
+        await ctx.send("You must be in a voice channel to summon someone.")
+        return
+    embed = discord.Embed(title="You've been summoned by " + str(ctx.author) + "!",
+                          description=f"They're currently playing "
+                                      f"{member.activity.name if member.activity else 'nothing'}"
+                                      f" and are connected to {member.voice.channel.name}")
+    invite = await member.voice.channel.create_invite(max_uses=1, temporary=True)
+    button = [
+        manage_components.create_actionrow(
+            manage_components.create_button(style=ButtonStyle.URL,
+                                            url=invite.url,
+                                            label="Join their channel here!"))]
+    await ctx.target_author.send(embed=embed, components=button)
+    await ctx.send("Summon sent to <@"+str(ctx.target_author.id)+">", hidden=True)
+# ==========================SUMMON============================>>>
 
 
 client.run(token)  # run the bot
