@@ -86,13 +86,14 @@ async def youtube(ctx):
     log.event(f"/youtube command detected in [{ctx.channel_id}:{ctx.guild_id}]")
     if not ctx.guild:  # if the message was sent in a DMChannel
         log.warning(f"/youtube: Command sent in DM. handling canceled.")
-        await ctx.reply(content="Please use the command inside of a server (the bot must also be on that server).")
+        await ctx.reply(content="Please use the command inside of a server (the bot must also be on that server).",
+                        hidden=True)
         return
 
     member = await ctx.guild.fetch_member(ctx.author_id)
     if not member.voice:  # if the author isn't connected to voice
         log.warning(f"/youtube: User not connected to VC, handling canceled.")
-        await ctx.send(content="You don't appear to be in any voice channel.")
+        await ctx.send(content="You don't appear to be in any voice channel.", hidden=True)
         return
 
     r = Route("POST", "/channels/{channel_id}/invites",
@@ -108,7 +109,7 @@ async def youtube(ctx):
         inv = await client.http.request(r, reason=None, json=payload)  # send an http to get the channel invite
     except discord.DiscordException as e:
         log.error(f"Error with Discord.py: {e}")
-        await ctx.send("Sorry, but there was a problem with handling your command. Try again later.")
+        await ctx.send("Sorry, but there was a problem with handling your command. Try again later.", hidden=True)
     else:
         embed = discord.Embed(color=0xff0000)  # create new embed
         embed.set_thumbnail(url="https://i.imgur.com/6XnPq2s.png")
@@ -162,7 +163,8 @@ async def poll(ctx, **options):
     log.event(f"/poll command detected in [{ctx.channel_id}:{ctx.guild_id}]")
     if not ctx.guild:  # if the message was sent in a DMChannel
         log.warning(f"/poll: Command sent in DM. handling canceled.")
-        await ctx.send(content="Please use the command inside of a server (the bot must also be on that server).")
+        await ctx.send(content="Please use the command inside of a server (the bot must also be on that server).",
+                       hidden=True)
         return
     choices = []
     for option in options:  # import all options into an indexed list except for the question
@@ -203,6 +205,7 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
     log.event("Poll choice detected.")
     if not ctx.origin_message:  # if there is no origin message, cancel
         log.warning("Failed to locate origin message for " + ctx.custom_id)
+        ctx.send("Error occurred with voting. Try later?", hidden=True)
         return
     embed = ctx.origin_message.embeds[0]  # make the poll embed into a dict
     vote_count = []
@@ -286,7 +289,7 @@ async def imdb(ctx, **options):
             movies = imdb_client.search_movie(options["query"])[:5]  # Take the top 5 results
         except IMDbError as e:
             log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
-            await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
+            await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.", hidden=True)
             return
         movie_info = []  # container to hold the movie information we're gonna use for the embed
         if movies:
@@ -300,7 +303,8 @@ async def imdb(ctx, **options):
                     ])
                 except IMDbError as e:
                     log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
-                    await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
+                    await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.",
+                                    hidden=True)
                     return
                 # skip iteration if 'tv movie' or 'movie'
                 if not movie["kind"] == "movie" and not movie["kind"] == "tv movie":
@@ -368,7 +372,7 @@ async def imdb(ctx, **options):
             shows = imdb_client.search_movie(options["query"])
         except IMDbError as e:
             log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
-            await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
+            await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.", hidden=True)
             return
         show_info = []
         if shows:
@@ -382,7 +386,8 @@ async def imdb(ctx, **options):
                     ])
                 except IMDbError as e:
                     log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
-                    await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.")
+                    await ctx.reply("Sorry, there seems to have been a disagreement between the bot and IMDb.",
+                                    hidden=True)
                     return
                 if not show["kind"] == "tv series" and not show["kind"] == "tv mini series":
                     continue
@@ -474,14 +479,14 @@ async def anime(ctx, **options):
     if not search:
         log.warning("/Anime: Couldn't find a result.")
         log.event("/Anime: Handling finished.")
-        await ctx.send(f"Couldn't find a result for \"{options['search_query']}\"")
+        await ctx.send(f"Couldn't find a result for \"{options['search_query']}\"", hidden=True)
         return
     try:
         result = Anime(search.results[0].mal_id)
     except Exception as e:
         log.error(str(e))
         log.error("Stopping /Anime execution")
-        await ctx.send("Error encountered while executing the /Anime command.")
+        await ctx.send("Error encountered while executing the /Anime command.", hidden=True)
         return
 
     # title_english, title_japanese, url, image_url, genres, synopsis
@@ -529,7 +534,7 @@ async def piratebay(ctx, **options):
             magnet = magnet_shorten(tor.magnetlink)
         except NameError as e:
             log.error(str(e))
-            await ctx.send("There was an error in processing your request. Please try again later.")
+            await ctx.send("There was an error in processing your request. Please try again later.", hidden=True)
             return
         temp_embed.add_field(
             value=f"{i}) **Name: [{tor.title}]({magnet})**\n*{tor.category}*",
@@ -1001,13 +1006,13 @@ async def _convert_currency(ctx, **options):
     check_pattern = r"\A[a-zA-Z]{3}\Z"
     if not re.search(check_pattern, options["from"]) or not re.search(check_pattern, options["to"]):
         log.warning("Handling canceled due to false currency string.")
-        await ctx.send("One of the currency codes specified was incorrect (not 3 letters)")
+        await ctx.send("One of the currency codes specified was incorrect (not 3 letters)", hidden=True)
         return
     try:
         result = currency_convert.convert(options["from"], options["to"], options["quantity"])
     except ValueError:
         log.error("Error occurred with currency conversion, handling canceled")
-        await ctx.send("An error occurred converting, likely due to wrong currency codes.")
+        await ctx.send("An error occurred converting, likely due to wrong currency codes.", hidden=True)
         return
     await ctx.send(f"{options['quantity']} {options['from'].upper()} = {result:.2f} {options['to'].upper()}")
     log.success("/convert currency handling finished")
