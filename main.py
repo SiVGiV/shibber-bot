@@ -16,7 +16,8 @@ import discord_slash
 from discord.http import Route
 from discord_slash import SlashCommand
 from discord_slash.utils import manage_commands, manage_components
-from discord_slash.model import ButtonStyle
+from discord_slash.model import ButtonStyle, ContextMenuType
+from discord_slash.context import MenuContext
 # Helper package imports
 from tinydb import TinyDB, where
 from tpblite import TPB
@@ -1011,6 +1012,16 @@ async def _convert_currency(ctx, **options):
     await ctx.send(f"{options['quantity']} {options['from'].upper()} = {result:.2f} {options['to'].upper()}")
     log.success("/convert currency handling finished")
 # ==========================/CONVERT=============================>>>
+
+
+# <<<=======================SEND LOVE===============================
+@slash.context_menu(target=ContextMenuType.USER,
+                    name="heart",
+                    guild_ids=_bot_values["slash_cmd_guilds"])
+async def heart(ctx: MenuContext):
+    await ctx.target_author.send("Someone sent you a  ❤️")
+    await ctx.send("Heart sent to <@"+str(ctx.target_author.id)+">", hidden=True)
+# ==========================SEND LOVE============================>>>
 
 
 client.run(token)  # run the bot
