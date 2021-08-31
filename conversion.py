@@ -195,7 +195,11 @@ class CurrencyConverter:
         url = "https://api.exchangerate-api.com/v4/latest/USD"
         crypto_url = "http://api.coinlayer.com/api/live?access_key=" + crypto_key
         self.data = requests.get(url).json()
+        if not self.data["rates"]:
+            self.data["rates"].append({})
         self.crypto_data = requests.get(crypto_url).json()
+        if not self.crypto_data["rates"]:
+            self.crypto_data["rates"].append({})
         self.currencies = self.data["rates"]
         temp = map(
             lambda x: (x[0], 1 / x[1] if x[1] != 0 else 0),
