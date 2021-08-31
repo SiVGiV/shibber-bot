@@ -205,7 +205,7 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
     log.event("Poll choice detected.")
     if not ctx.origin_message:  # if there is no origin message, cancel
         log.warning("Failed to locate origin message for " + ctx.custom_id)
-        ctx.send("Error occurred with voting. Try later?", hidden=True)
+        await ctx.send("Error occurred with voting. Try later?", hidden=True)
         return
     embed = ctx.origin_message.embeds[0]  # make the poll embed into a dict
     vote_count = []
