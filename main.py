@@ -1027,7 +1027,7 @@ async def summon(ctx: MenuContext):
     member = await ctx.guild.fetch_member(ctx.author_id)
     if not member.voice:
         log.warning("Couldn't send a summon - user not in a voice channel")
-        await ctx.send("You must be in a voice channel to summon someone.")
+        await ctx.send("You must be in a voice channel to summon someone.", hidden=True)
         return
     embed = discord.Embed(title="You've been summoned by " + str(ctx.author) + "!",
                           description=f"They're currently playing "
@@ -1043,5 +1043,14 @@ async def summon(ctx: MenuContext):
     await ctx.send("Summon sent to <@"+str(ctx.target_author.id)+">", hidden=True)
 # ==========================SUMMON============================>>>
 
+
+# <<<=======================SEND LOVE===============================
+@slash.context_menu(target=ContextMenuType.USER,
+                    name="Send a heart",
+                    guild_ids=_bot_values["slash_cmd_guilds"])
+async def send_a_heart(ctx: MenuContext):
+    await ctx.target_author.send("Someone sent you a  ❤️")
+    await ctx.send("Heart sent to <@"+str(ctx.target_author.id)+">", hidden=True)
+# ==========================SEND LOVE============================>>>
 
 client.run(token)  # run the bot
