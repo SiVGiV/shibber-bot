@@ -1002,6 +1002,7 @@ async def _convert_temperature(ctx, **options):
     ]
 )
 async def _convert_currency(ctx, **options):
+    await ctx.defer()
     log.event("/convert currency command received")
     check_pattern = r"\A[a-zA-Z]{3}\Z"
     if not re.search(check_pattern, options["from"]) or not re.search(check_pattern, options["to"]):
