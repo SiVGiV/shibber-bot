@@ -2,3 +2,4 @@
 .env
 venv
 databases
+__pycache__
