@@ -54,17 +54,27 @@ class TicTacToe:
             return 2
         return -1
 
-    def get_buttons(self, custom_id=""):
+    def get_buttons(self, force_stop=False):
         buttons = []
         for i in range(9):
             buttons.append(
                 manage_components.create_button(
                     style=[ButtonStyle.grey, ButtonStyle.blue, ButtonStyle.red][self.board[i]],
                     label=" ",
-                    custom_id=f"tictactoe_{i}{custom_id}",
-                    disabled=self.board[i] > 0 or self.game_over
+                    custom_id=f"tictactoe_{i}",
+                    disabled=self.board[i] > 0 or self.game_over or force_stop
                 )
             )
+        buttons.append(manage_components.create_button(
+            style=ButtonStyle.green,
+            label="Restart game",
+            custom_id="tictactoe_restart"
+        ))
+        buttons.append(manage_components.create_button(
+            style=ButtonStyle.red,
+            label="Stop game",
+            custom_id="tictactoe_stop"
+        ))
         actionrows = manage_components.spread_to_rows(*buttons, max_in_row=3)
         return actionrows
 

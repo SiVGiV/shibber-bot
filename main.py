@@ -1033,6 +1033,11 @@ async def tictactoe(ctx: MenuContext):
     log.event("TicTacToe context action detected.")
     player1 = ctx.target_author.id
     player2 = ctx.author_id
+    if tictactoe_db.contains(where("player1") == ctx.author_id)\
+       or tictactoe_db.contains(where("player2") == ctx.author_id):
+        await ctx.send("You need to finish your existing games first.", hidden=True)
+        log.warning("Player tried creating a new game despite having an unfinished one.")
+        return
     msg_content = ""
     msg_content += f"🟦 <@{player1}> vs  🟥 <@{player2}>\n"
     board = ttt.TicTacToe()
@@ -1066,6 +1071,30 @@ async def handle_tictactoe_component(ctx):
                        f" You can challenge someone by right clicking their name and choosing Apps->TicTacToe",
                        hidden=True)
         return
+    if ctx.custom_id == "tictactoe_restart":
+        board = ttt.TicTacToe()
+        tictactoe_db.update({
+                "game_id": db_item["game_id"],
+                "player1": db_item["player1"],
+                "player2": db_item["player2"],
+                "board": board.get_string(),
+                "turn": 1 if ctx.author_id == db_item["player2"] else 2
+            })
+        db_item = tictactoe_db.get(where("game_id") == ctx.origin_message_id)
+        msg_content = ""
+        msg_content += f"🟦 <@{db_item['player1']}> vs  🟥 <@{db_item['player2']}>\n"
+        msg_content += f"**<@{db_item['player' + str(db_item['turn'])]}>'s turn!**"
+        await ctx.edit_origin(content=msg_content, components=board.get_buttons())
+        log.success("Component action handled.")
+    elif ctx.custom_id == "tictactoe_stop":
+        board = ttt.TicTacToe()
+        board.update(full_board=db_item["board"])
+        msg_content = ""
+        msg_content += f"🟦 <@{db_item['player1']}> vs  🟥 <@{db_item['player2']}>\n"
+        msg_content += f"**Game stopped by <@{ctx.author_id}>**"
+        await ctx.edit_origin(content=msg_content, components=board.get_buttons(force_stop=True))
+        tictactoe_db.remove(where("game_id") == ctx.origin_message_id)
+        log.success("Game stopped.")
     if not ctx.author_id == db_item[f"player{db_item['turn']}"]:
         # check if player's turn
         log.warning("Player tried to play on opponent's turn. Ignoring")
