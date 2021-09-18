@@ -9,6 +9,7 @@ from datetime import datetime as dt
 # Project imports
 from utils import *
 import conversion
+import tictactoe as ttt
 from loggable import Loggable
 # Framework imports
 import discord
@@ -19,7 +20,7 @@ from discord_slash.utils import manage_commands, manage_components
 from discord_slash.model import ButtonStyle, ContextMenuType
 from discord_slash.context import MenuContext
 # Helper package imports
-from tinydb import TinyDB, where
+from tinydb import TinyDB, where, operations
 from tpblite import TPB
 from imdb import IMDb, IMDbError, helpers
 from mal import Anime, AnimeSearch
@@ -32,7 +33,9 @@ init()
 client = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
 imdb_client = IMDb()
-poll_db = TinyDB("./databases/poll.db")
+main_db = TinyDB("./databases/main.db")
+poll_db = main_db.table("poll")
+tictactoe_db = main_db.table("tictactoe")
 token = os.getenv("SHIBBER_TOKEN")
 currency_convert = conversion.CurrencyConverter(os.getenv("COINLAYER_TOKEN"))
 tpb = TPB("https://tpb.party/")
@@ -74,6 +77,8 @@ async def on_component(ctx: discord_slash.ComponentContext):
         f"msg:{ctx.origin_message_id},channel:{ctx.channel_id}]")
     if ctx.custom_id.startswith("poll_"):
         await handle_poll_component(ctx)
+    elif ctx.custom_id.startswith("tictactoe_"):
+        await handle_tictactoe_component(ctx)
 
 
 # <<<====================/YOUTUBE================================
@@ -1020,7 +1025,110 @@ async def _convert_currency(ctx, **options):
 # ==========================/CONVERT=============================>>>
 
 
-# <<<=======================SUMMON===============================
+# <<<======================TICTACTOE:USER===============================
+@slash.context_menu(name="TicTacToe",
+                    target=ContextMenuType.USER,
+                    guild_ids=_bot_values["slash_cmd_guilds"])
+async def tictactoe(ctx: MenuContext):
+    log.event("TicTacToe context action detected.")
+    player1 = ctx.target_author.id
+    player2 = ctx.author_id
+    msg_content = ""
+    msg_content += f"🟦 <@{player1}> vs  🟥 <@{player2}>\n"
+    board = ttt.TicTacToe()
+    if player1 == client.user.id:
+        msg_content += f"**<@{player2}>'s turn!**"
+        board.update(1, ttt.compute_step(board, 1))
+    else:
+        msg_content += f"**<@{player1}>'s turn!**"
+    components = board.get_buttons()
+    message = await ctx.send(content=msg_content, components=components)
+    tictactoe_db.insert({
+        "game_id": message.id,
+        "player1": player1,
+        "player2": player2,
+        "board": board.get_string(),
+        "turn": 1 if board.blanks == 9 else 2
+    })
+    log.success("TicTacToe game posted.")
+
+
+async def handle_tictactoe_component(ctx):
+    db_item = tictactoe_db.get(where("game_id") == ctx.origin_message_id)
+    if db_item is None:  # check for message
+        log.error("Component call from message not in DB.")
+        await ctx.send("There was an error handling your move.", hidden=True)
+        return
+    if not ctx.author_id == db_item["player1"] and not ctx.author_id == db_item["player2"]:
+        # check if player is in the game
+        log.warning("Non player attempted move. Ignoring")
+        await ctx.send(f"You're not a part of this game."
+                       f" You can challenge someone by right clicking their name and choosing Apps->TicTacToe",
+                       hidden=True)
+        return
+    if not ctx.author_id == db_item[f"player{db_item['turn']}"]:
+        # check if player's turn
+        log.warning("Player tried to play on opponent's turn. Ignoring")
+        await ctx.send("You must wait your turn to play!", hidden=True)
+        return
+    board = ttt.TicTacToe()
+    board.update(full_board=db_item["board"])
+    board.update(player=db_item["turn"], i=int(ctx.custom_id[-1]))
+    tictactoe_db.update(
+        operations.set("turn", 2 if db_item["turn"] == 1 else 1),
+        where("game_id") == ctx.origin_message_id
+    )
+    tictactoe_db.update(
+        operations.set("board", board.get_string()),
+        where("game_id") == ctx.origin_message_id
+    )
+    if board.game_over:
+        msg_content = ""
+        msg_content += f"🟦 <@{db_item['player1']}> vs 🟥 <@{db_item['player2']}>\n"
+        if board.check_win() == -1:
+            msg_content += "**Tie! No one won.**"
+        else:
+            msg_content += f"<@{db_item['player1']}>" if board.check_win() == 1 else f"<@{db_item['player2']}>"
+            msg_content += " won the game!"
+        await ctx.edit_origin(content=msg_content, components=board.get_buttons())
+        tictactoe_db.remove(where("game_id") == ctx.origin_message_id)
+        log.success("Game ended. Discarding.")
+        return
+    db_item = tictactoe_db.get(where("game_id") == ctx.origin_message_id)  # update item from db
+    if db_item[f"player{db_item['turn']}"] == client.user.id:
+        board.update(player=db_item['turn'], i=ttt.compute_step(board, 1))
+        if board.game_over:
+            msg_content = ""
+            msg_content += f"🟦 <@{db_item['player1']}> vs 🟥 <@{db_item['player2']}>\n"
+            if board.check_win() == -1:
+                msg_content += "**Tie! No one won.**"
+            else:
+                msg_content += f"<@{db_item['player1']}>" if board.check_win() == 1 else f"<@{db_item['player2']}>"
+                msg_content += " won the game!"
+            await ctx.edit_origin(content=msg_content, components=board.get_buttons())
+            tictactoe_db.remove(where("game_id") == ctx.origin_message_id)
+            log.success("Game ended. Discarding.")
+            return
+        tictactoe_db.update(
+            operations.set("turn", 2 if db_item["turn"] == 1 else 1),
+            where("game_id") == ctx.origin_message_id
+        )
+        tictactoe_db.update(
+            operations.set("board", board.get_string()),
+            where("game_id") == ctx.origin_message_id
+        )
+        await ctx.edit_origin(content=ctx.origin_message.content, components=board.get_buttons())
+        return
+    msg_content = ""
+    msg_content += f"🟦 <@{db_item['player1']}> vs  🟥 <@{db_item['player2']}>\n"
+    msg_content += f"**<@{db_item['player'+str(db_item['turn'])]}>'s turn!**"
+    await ctx.edit_origin(content=msg_content, components=board.get_buttons())
+    log.success("Component action handled.")
+
+# =========================TICTACTOE:USER============================>>>
+
+
+# <<<=======================SUMMON:USER===============================
 @slash.context_menu(target=ContextMenuType.USER,
                     name="Summon",
                     guild_ids=_bot_values["slash_cmd_guilds"])
@@ -1042,16 +1150,17 @@ async def summon(ctx: MenuContext):
                                             label="Join their channel here!"))]
     await ctx.target_author.send(embed=embed, components=button)
     await ctx.send("Summon sent to <@"+str(ctx.target_author.id)+">", hidden=True)
-# ==========================SUMMON============================>>>
+# ==========================SUMMON:USER============================>>>
 
 
-# <<<=======================SEND LOVE===============================
+# <<<=======================SEND LOVE:USER===============================
 @slash.context_menu(target=ContextMenuType.USER,
                     name="Send a heart",
                     guild_ids=_bot_values["slash_cmd_guilds"])
 async def send_a_heart(ctx: MenuContext):
     await ctx.target_author.send("Someone sent you a  ❤️")
     await ctx.send("Heart sent to <@"+str(ctx.target_author.id)+">", hidden=True)
-# ==========================SEND LOVE============================>>>
+# ==========================SEND LOVE:USER============================>>>
+
 
 client.run(token)  # run the bot

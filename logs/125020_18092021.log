@@ -1,0 +1,8 @@
+[12:50:24 18/09/21] SUCCESS | Bot Connected
+[12:50:30 18/09/21] EVENT | Component event detected: [tictactoe_4,msg:888723633697071114,channel:865989456511107113]
+[12:50:32 18/09/21] EVENT | Component event detected: [tictactoe_8,msg:888723633697071114,channel:865989456511107113]
+[12:50:34 18/09/21] EVENT | Component event detected: [tictactoe_3,msg:888723633697071114,channel:865989456511107113]
+[12:50:39 18/09/21] EVENT | Component event detected: [tictactoe_2,msg:888723633697071114,channel:865989456511107113]
+[12:50:40 18/09/21] EVENT | Game ended. Discarding.
+[12:52:56 18/09/21] EVENT | Component event detected: [tictactoe_8,msg:888724088225431563,channel:865989456511107113]
+[12:52:56 18/09/21] EVENT | Player tried to play on opponent's turn. Ignoring
