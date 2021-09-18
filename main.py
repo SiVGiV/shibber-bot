@@ -1073,19 +1073,30 @@ async def handle_tictactoe_component(ctx):
         return
     if ctx.custom_id == "tictactoe_restart":
         board = ttt.TicTacToe()
-        tictactoe_db.update({
+        if db_item["player1"] == client.user.id:
+            board.update(1, ttt.compute_step(board, 1))
+            tictactoe_db.update({
                 "game_id": db_item["game_id"],
                 "player1": db_item["player1"],
                 "player2": db_item["player2"],
                 "board": board.get_string(),
-                "turn": 1 if ctx.author_id == db_item["player2"] else 2
+                "turn": 2
             })
+        else:
+            tictactoe_db.update({
+                    "game_id": db_item["game_id"],
+                    "player1": db_item["player1"],
+                    "player2": db_item["player2"],
+                    "board": board.get_string(),
+                    "turn": 1 if ctx.author_id == db_item["player2"] else 2
+                })
         db_item = tictactoe_db.get(where("game_id") == ctx.origin_message_id)
         msg_content = ""
         msg_content += f"🟦 <@{db_item['player1']}> vs  🟥 <@{db_item['player2']}>\n"
         msg_content += f"**<@{db_item['player' + str(db_item['turn'])]}>'s turn!**"
         await ctx.edit_origin(content=msg_content, components=board.get_buttons())
         log.success("Component action handled.")
+        return
     elif ctx.custom_id == "tictactoe_stop":
         board = ttt.TicTacToe()
         board.update(full_board=db_item["board"])
@@ -1095,6 +1106,7 @@ async def handle_tictactoe_component(ctx):
         await ctx.edit_origin(content=msg_content, components=board.get_buttons(force_stop=True))
         tictactoe_db.remove(where("game_id") == ctx.origin_message_id)
         log.success("Game stopped.")
+        return
     if not ctx.author_id == db_item[f"player{db_item['turn']}"]:
         # check if player's turn
         log.warning("Player tried to play on opponent's turn. Ignoring")
