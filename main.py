@@ -1139,10 +1139,8 @@ async def summon(ctx: MenuContext):
         await ctx.send("You must be in a voice channel to summon someone.", hidden=True)
         return
     embed = discord.Embed(title="You've been summoned by " + str(ctx.author) + "!",
-                          description=f"They're currently playing "
-                                      f"{member.activity.name if member.activity else 'nothing'}"
-                                      f" and are connected to {member.voice.channel.name}")
-    invite = await member.voice.channel.create_invite(max_uses=1, temporary=True)
+                          description=f"They are connected to {member.voice.channel.name}")
+    invite = await member.voice.channel.create_invite(max_uses=1, temporary=True, max_age=900)
     button = [
         manage_components.create_actionrow(
             manage_components.create_button(style=ButtonStyle.URL,
