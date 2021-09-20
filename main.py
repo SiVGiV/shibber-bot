@@ -1063,10 +1063,11 @@ async def handle_tictactoe_component(ctx):
     if db_item is None:  # check for message
         if ctx.custom_id == "tictactoe_restart":
             board = ttt.TicTacToe()
-            players = re.findall(r"<@(\d+)>.*<@(\d+)>.*", ctx.origin_message.content)
+            players = re.findall(r"<@(\d+)>.*<@(\d+)>.*", ctx.origin_message.content)[0]
+            print(players)
             if int(players[0]) == client.user.id:
                 board.update(1, ttt.compute_step(board, 1))
-                tictactoe_db.update({
+                tictactoe_db.insert({
                     "game_id": ctx.origin_message_id,
                     "player1": int(players[0]),
                     "player2": int(players[1]),
@@ -1074,7 +1075,7 @@ async def handle_tictactoe_component(ctx):
                     "turn": 2
                 })
             else:
-                tictactoe_db.update({
+                tictactoe_db.insert({
                     "game_id": ctx.origin_message_id,
                     "player1": int(players[0]),
                     "player2": int(players[1]),
@@ -1093,6 +1094,9 @@ async def handle_tictactoe_component(ctx):
             log.error("Component call from message not in DB.")
             await ctx.send("There was an error handling your move.", hidden=True)
             return
+    if ctx.custom_id == "tictactoe_restart":
+        await ctx.send("Can only restart a stopped or finished game.", hidden=True)
+        return
     if not ctx.author_id == db_item["player1"] and not ctx.author_id == db_item["player2"]:
         # check if player is in the game
         log.warning("Non player attempted move. Ignoring")
