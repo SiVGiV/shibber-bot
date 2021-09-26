@@ -6,6 +6,7 @@ import os
 import json
 from dotenv import load_dotenv
 from datetime import datetime as dt
+from urllib.parse import quote_plus
 # Project imports
 from utils import *
 import conversion
@@ -35,6 +36,7 @@ slash = SlashCommand(client, sync_commands=True)
 imdb_client = IMDb()
 main_db = TinyDB("./databases/main.db")
 poll_db = main_db.table("poll")
+watchlist_db = main_db.table("watchlist")
 tictactoe_db = main_db.table("tictactoe")
 token = os.getenv("SHIBBER_TOKEN")
 currency_convert = conversion.CurrencyConverter(os.getenv("COINLAYER_TOKEN"))
@@ -79,6 +81,8 @@ async def on_component(ctx: discord_slash.ComponentContext):
         await handle_poll_component(ctx)
     elif ctx.custom_id.startswith("tictactoe_"):
         await handle_tictactoe_component(ctx)
+    elif ctx.custom_id.startswith("watchlist_"):
+        await handle_watchlist_component(ctx)
 
 
 # <<<====================/YOUTUBE================================
@@ -126,7 +130,6 @@ async def youtube(ctx):
         await ctx.send(embed=embed)
     finally:
         log.success("/youtube: Handling finished")
-
 
 # ===========================/YOUTUBE===========================>>>
 
@@ -296,6 +299,7 @@ async def imdb(ctx, **options):
             log.error("IMDb API error: " + str(e) + "\nCanceled handling.")
             await ctx.reply("Sorry, but there seems to have been a disagreement between the bot and IMDb.", hidden=True)
             return
+        print(movies)
         movie_info = []  # container to hold the movie information we're gonna use for the embed
         if movies:
             i = 1
@@ -365,13 +369,66 @@ async def imdb(ctx, **options):
                 embed.add_field(name="Directed by:", value=movie["directors"], inline=False)
                 embed.add_field(name="Written by:", value=movie["writers"], inline=False)
                 embed.add_field(name="Cast:", value=movie["cast"], inline=False)
+                embed.set_footer(text=f"tt{movie['id']}")
                 embeds.append(embed)
+                watchlist_buttons = [manage_components.create_button(
+                    style=ButtonStyle.green,
+                    label="Add to watchlist",
+                    emoji="➕",
+                    custom_id="watchlist_add"
+                ),
+                    manage_components.create_button(
+                        style=ButtonStyle.red,
+                        label="Remove from watchlist",
+                        emoji="➖",
+                        custom_id="watchlist_remove"
+                    ),
+                    manage_components.create_button(
+                        style=ButtonStyle.blue,
+                        label="List interested",
+                        emoji="📝",
+                        custom_id="watchlist_list"
+                    )]
+                tor_buttons = []
                 try:
-                    await ctx.send(embeds=embeds)
+                    res = requests.get("https://yts.mx/api/v2/list_movies.json", params={
+                        "query_term": f"tt{movie['id']}"
+                    }).json()
+                except Exception as e:
+                    log.error(str(e))
+                else:
+                    trackers = "tr=udp://open.demonii.com:1337/announce\
+                    &tr=udp://tracker.openbittorrent.com:80\
+                    &tr=udp://tracker.coppersurfer.tk:6969\
+                    &tr=udp://glotorrents.pw:6969/announce\
+                    &tr=udp://tracker.opentrackr.org:1337/announce\
+                    &tr=udp://torrent.gresille.org:80/announce\
+                    &tr=udp://p4p.arenabg.com:1337\
+                    &tr=udp://tracker.leechers-paradise.org:6969"
+                    if res["status"] == "ok":
+                        if res["data"]["movie_count"] == 1:
+                            torrent_res = res["data"]["movies"][0]
+                            for i in range(len(torrent_res["torrents"])):
+                                tor = torrent_res["torrents"][i]
+                                # print(torrent_res)
+                                tor_buttons.append(manage_components.create_button(
+                                    style=ButtonStyle.URL,
+                                    label=f"{tor['quality']} {tor['type'].title()} "
+                                          f"({tor['size']} | ▲{tor['seeds']} ▼{tor['peers']})",
+                                    url=magnet_shorten(os.getenv("TINYURL_TOKEN"),
+                                                       f"magnet:?xt=urn:btih:{tor['hash']}"
+                                                       f"&dn={quote_plus(torrent_res['title_long'])}&{trackers}")
+                                ))
+                try:
+                    await ctx.send(embeds=embeds, components=[manage_components.create_actionrow(*watchlist_buttons),
+                                                              manage_components.create_actionrow(*tor_buttons)])
                 except discord.DiscordException as e:
                     log.error("Couldn't reply to /imdb. Error:" + str(e))
                 else:
                     log.success("/imdb: Handling finished.")
+        else:
+            log.error("/imdb failed: not Movie")
+            ctx.send("Movie not found or other error occurred.", hidden=True)
     elif options["search_type"] == "tv":  # if search for tv series
         try:
             shows = imdb_client.search_movie(options["query"])
@@ -450,6 +507,7 @@ async def imdb(ctx, **options):
                 else:
                     embed.add_field(name="Written by:", value=show["writers"], inline=False)
                 embed.add_field(name="Cast:", value=show["cast"], inline=False)
+                embed.set_footer(text=f"tt{show['id']}")
                 embeds.append(embed)
                 try:
                     await ctx.send(embeds=embeds)
@@ -457,9 +515,84 @@ async def imdb(ctx, **options):
                     log.error("Couldn't reply to /imdb. Error:" + str(e))
                 else:
                     log.success("/imdb: Handling finished.")
+# ==========================/IMDB=================================>>>
 
 
-# ==========================/IMDB===============================>>>
+# <<<=======================/WATCHLIST===============================
+@slash.slash(
+    name="watchlist",
+    description="Sends the watchlist of said person, or a list of common items between all people.",
+    guild_ids=_bot_values["slash_cmd_guilds"],
+    options=[
+        manage_commands.create_option(
+            name="users",
+            description="User/users to send watchlist for",
+            option_type=3,
+            required=False
+        )
+    ]
+)
+async def watchlist(ctx, **options):
+    await ctx.defer()
+    log.event("/watchlist command received")
+    msg_str = "Watchlist for "
+    users = []
+    if "users" not in options:
+        msg_str += f"<@{ctx.author_id}>"
+        users.append(ctx.author_id)
+    else:
+        str_users = re.findall(r"<@!(\d+)>", options["users"])
+        for i in range(len(str_users)):
+            users.append(int(str_users[i]))
+            msg_str += f"{', ' if i > 0 else ''}<@{users[-1]}>"
+        if len(users) == 0:
+            await ctx.send("No user tags found in command option 'users'", hidden=True)
+            log.warning("Command dispatched with no users")
+            return
+    msg_str += ":\n"
+    film_doc_list = watchlist_db.search(where("user_id") == users[0])
+    for i in range(1, len(users)):
+        for j in range(len(film_doc_list)):
+            if not watchlist_db.contains((where("user_id") == users[i]) &
+                                         (where("film_id") == film_doc_list[j]["film_id"])):
+                film_doc_list.remove(film_doc_list[j])
+    for i in range(len(film_doc_list)):
+        film_id = film_doc_list[i]["film_id"]
+        temp = imdb_client.get_movie(film_id[2::])
+        msg_str += f"**{temp.get('title')}** ({temp.get('year')})\n"
+    if len(msg_str) > 0:
+        await ctx.send(msg_str)
+    else:
+        await ctx.send("There are no movies in this list.")
+
+
+async def handle_watchlist_component(ctx):
+    if ctx.custom_id == "watchlist_add":
+        mov_id = ctx.origin_message.embeds[0].footer.text
+        if not watchlist_db.contains((where("user_id") == ctx.author_id) & (where("film_id") == mov_id)):
+            watchlist_db.insert({"user_id": ctx.author_id, "film_id": mov_id, "guild_id": ctx.guild_id})
+            await ctx.send("Movie added to your watchlist.", hidden=True)
+        else:
+            await ctx.send("Movie already on your watchlist.", hidden=True)
+    elif ctx.custom_id == "watchlist_remove":
+        mov_id = ctx.origin_message.embeds[0].footer.text
+        if watchlist_db.contains((where("user_id") == ctx.author_id) & (where("film_id") == mov_id)):
+            watchlist_db.remove((where("user_id") == ctx.author_id) & (where("film_id") == mov_id))
+            await ctx.send("Movie removed from your watchlist.", hidden=True)
+        else:
+            await ctx.send("Movie wasn't on your watchlist.", hidden=True)
+    elif ctx.custom_id == "watchlist_list":
+        mov_id = ctx.origin_message.embeds[0].footer.text
+        interested = watchlist_db.search((where("film_id") == mov_id) & (where("guild_id") == ctx.guild_id))
+        msg = "People interested in **" + ctx.origin_message.embeds[0].title + "**:\n"
+        for item in interested:
+            msg += "<@" + str(item["user_id"]) + ">"
+        msg = msg.replace("><", ">, <")
+        if len(interested) > 0:
+            await ctx.send(msg, hidden=True)
+        else:
+            await ctx.send("No one has added this movie to their watchlist (yet).", hidden=True)
+# ==========================/WATCHLIST============================>>>
 
 
 # <<<=======================/ANIME===================================
@@ -505,8 +638,6 @@ async def anime(ctx, **options):
     embed.set_footer(text="ʸᵒᵘ ᶠᵘᶜᵏᶦⁿᵍ ʷᵉᵉᵇ")
     await ctx.send(embed=embed)
     log.success("/Anime: Handling finished")
-
-
 # ==========================/ANIME================================>>>
 
 
@@ -536,7 +667,7 @@ async def piratebay(ctx, **options):
         if i > tor_limit:
             break
         try:
-            magnet = magnet_shorten(tor.magnetlink)
+            magnet = magnet_shorten(os.getenv("TINYURL_TOKEN"), tor.magnetlink)
         except NameError as e:
             log.error(str(e))
             await ctx.send("There was an error in processing your request. Please try again later.", hidden=True)
@@ -550,8 +681,6 @@ async def piratebay(ctx, **options):
     res_embeds.append(temp_embed)
     await ctx.send(embeds=res_embeds)
     log.success("/piratebay: handling finished")
-
-
 # ==========================/PIRATEBAY============================>>>
 
 
@@ -1022,6 +1151,8 @@ async def _convert_currency(ctx, **options):
         return
     await ctx.send(f"{options['quantity']} {options['from'].upper()} = {result:.2f} {options['to'].upper()}")
     log.success("/convert currency handling finished")
+
+
 # ==========================/CONVERT=============================>>>
 
 
@@ -1033,8 +1164,8 @@ async def tictactoe(ctx: MenuContext):
     log.event("TicTacToe context action detected.")
     player1 = ctx.target_author.id
     player2 = ctx.author_id
-    if tictactoe_db.contains(where("player1") == ctx.author_id)\
-       or tictactoe_db.contains(where("player2") == ctx.author_id):
+    if tictactoe_db.contains(where("player1") == ctx.author_id) \
+            or tictactoe_db.contains(where("player2") == ctx.author_id):
         await ctx.send("You need to finish your existing games first.", hidden=True)
         log.warning("Player tried creating a new game despite having an unfinished one.")
         return
@@ -1169,9 +1300,10 @@ async def handle_tictactoe_component(ctx):
         return
     msg_content = ""
     msg_content += f"🟦 <@{db_item['player1']}> vs  🟥 <@{db_item['player2']}>\n"
-    msg_content += f"**<@{db_item['player'+str(db_item['turn'])]}>'s turn!**"
+    msg_content += f"**<@{db_item['player' + str(db_item['turn'])]}>'s turn!**"
     await ctx.edit_origin(content=msg_content, components=board.get_buttons())
     log.success("Component action handled.")
+
 
 # =========================TICTACTOE:USER============================>>>
 
@@ -1195,7 +1327,9 @@ async def summon(ctx: MenuContext):
                                             url=invite.url,
                                             label="Join their channel here!"))]
     await ctx.target_author.send(embed=embed, components=button)
-    await ctx.send("Summon sent to <@"+str(ctx.target_author.id)+">", hidden=True)
+    await ctx.send("Summon sent to <@" + str(ctx.target_author.id) + ">", hidden=True)
+
+
 # ==========================SUMMON:USER============================>>>
 
 
@@ -1205,7 +1339,9 @@ async def summon(ctx: MenuContext):
                     guild_ids=_bot_values["slash_cmd_guilds"])
 async def send_a_heart(ctx: MenuContext):
     await ctx.target_author.send("Someone sent you a  ❤️")
-    await ctx.send("Heart sent to <@"+str(ctx.target_author.id)+">", hidden=True)
+    await ctx.send("Heart sent to <@" + str(ctx.target_author.id) + ">", hidden=True)
+
+
 # ==========================SEND LOVE:USER============================>>>
 
 
