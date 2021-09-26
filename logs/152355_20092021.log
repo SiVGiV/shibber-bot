@@ -1,0 +1,4 @@
+[15:23:58 20/09/21] SUCCESS | Bot Connected
+[15:23:59 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:24:00 20/09/21] SUCCESS | Component action handled.
+[15:24:03 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]

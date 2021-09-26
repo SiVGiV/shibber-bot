@@ -1,0 +1,5 @@
+[15:39:03 26/09/21] SUCCESS | Bot Connected
+[15:39:10 26/09/21] EVENT | Component event detected: [watchlist_add,msg:891658297155928064,channel:865989456511107113]
+[15:39:12 26/09/21] EVENT | Component event detected: [watchlist_add,msg:891658297155928064,channel:865989456511107113]
+[15:39:16 26/09/21] EVENT | Component event detected: [watchlist_remove,msg:891658297155928064,channel:865989456511107113]
+[15:39:21 26/09/21] EVENT | Component event detected: [watchlist_remove,msg:891658297155928064,channel:865989456511107113]

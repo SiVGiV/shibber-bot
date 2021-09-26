@@ -1,0 +1,53 @@
+[15:25:50 20/09/21] SUCCESS | Bot Connected
+[15:25:55 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:25:58 20/09/21] EVENT | Component event detected: [tictactoe_stop,msg:889486547144036402,channel:865989456511107113]
+[15:25:58 20/09/21] SUCCESS | Game stopped.
+[15:25:59 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:26:00 20/09/21] SUCCESS | Component action handled.
+[15:26:02 20/09/21] EVENT | Component event detected: [tictactoe_4,msg:889486547144036402,channel:865989456511107113]
+[15:26:04 20/09/21] EVENT | Component event detected: [tictactoe_2,msg:889486547144036402,channel:865989456511107113]
+[15:26:05 20/09/21] EVENT | Component event detected: [tictactoe_3,msg:889486547144036402,channel:865989456511107113]
+[15:26:07 20/09/21] EVENT | Component event detected: [tictactoe_8,msg:889486547144036402,channel:865989456511107113]
+[15:26:08 20/09/21] SUCCESS | Game ended. Discarding.
+[15:26:09 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:26:10 20/09/21] SUCCESS | Component action handled.
+[15:26:11 20/09/21] EVENT | Component event detected: [tictactoe_4,msg:889486547144036402,channel:865989456511107113]
+[15:26:14 20/09/21] EVENT | Component event detected: [tictactoe_2,msg:889486547144036402,channel:865989456511107113]
+[15:26:15 20/09/21] EVENT | Component event detected: [tictactoe_3,msg:889486547144036402,channel:865989456511107113]
+[15:26:17 20/09/21] EVENT | Component event detected: [tictactoe_8,msg:889486547144036402,channel:865989456511107113]
+[15:26:18 20/09/21] SUCCESS | Game ended. Discarding.
+[15:26:19 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:26:19 20/09/21] SUCCESS | Component action handled.
+[15:26:21 20/09/21] EVENT | Component event detected: [tictactoe_0,msg:889486547144036402,channel:865989456511107113]
+[15:26:23 20/09/21] EVENT | Component event detected: [tictactoe_5,msg:889486547144036402,channel:865989456511107113]
+[15:26:25 20/09/21] EVENT | Component event detected: [tictactoe_7,msg:889486547144036402,channel:865989456511107113]
+[15:26:27 20/09/21] EVENT | Component event detected: [tictactoe_6,msg:889486547144036402,channel:865989456511107113]
+[15:26:27 20/09/21] SUCCESS | Game ended. Discarding.
+[15:26:29 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:26:30 20/09/21] SUCCESS | Component action handled.
+[15:26:31 20/09/21] EVENT | Component event detected: [tictactoe_4,msg:889486547144036402,channel:865989456511107113]
+[15:26:33 20/09/21] EVENT | Component event detected: [tictactoe_6,msg:889486547144036402,channel:865989456511107113]
+[15:26:35 20/09/21] EVENT | Component event detected: [tictactoe_1,msg:889486547144036402,channel:865989456511107113]
+[15:26:37 20/09/21] EVENT | Component event detected: [tictactoe_5,msg:889486547144036402,channel:865989456511107113]
+[15:26:37 20/09/21] SUCCESS | Game ended. Discarding.
+[15:26:38 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:26:39 20/09/21] SUCCESS | Component action handled.
+[15:26:40 20/09/21] EVENT | Component event detected: [tictactoe_3,msg:889486547144036402,channel:865989456511107113]
+[15:26:42 20/09/21] EVENT | Component event detected: [tictactoe_8,msg:889486547144036402,channel:865989456511107113]
+[15:26:45 20/09/21] EVENT | Component event detected: [tictactoe_7,msg:889486547144036402,channel:865989456511107113]
+[15:26:46 20/09/21] SUCCESS | Game ended. Discarding.
+[15:26:47 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:26:48 20/09/21] SUCCESS | Component action handled.
+[15:26:49 20/09/21] EVENT | Component event detected: [tictactoe_4,msg:889486547144036402,channel:865989456511107113]
+[15:26:51 20/09/21] EVENT | Component event detected: [tictactoe_1,msg:889486547144036402,channel:865989456511107113]
+[15:26:53 20/09/21] EVENT | Component event detected: [tictactoe_3,msg:889486547144036402,channel:865989456511107113]
+[15:26:54 20/09/21] EVENT | Component event detected: [tictactoe_8,msg:889486547144036402,channel:865989456511107113]
+[15:26:55 20/09/21] SUCCESS | Game ended. Discarding.
+[15:26:56 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889486547144036402,channel:865989456511107113]
+[15:26:56 20/09/21] SUCCESS | Component action handled.
+[15:26:58 20/09/21] EVENT | Component event detected: [tictactoe_stop,msg:889486547144036402,channel:865989456511107113]
+[15:26:58 20/09/21] SUCCESS | Game stopped.
+[15:27:01 20/09/21] EVENT | Component event detected: [tictactoe_stop,msg:889485586971377694,channel:865989456511107113]
+[15:27:01 20/09/21] ERROR | Component call from message not in DB.
+[15:27:09 20/09/21] EVENT | Component event detected: [tictactoe_stop,msg:889486547144036402,channel:865989456511107113]
+[15:27:09 20/09/21] ERROR | Component call from message not in DB.

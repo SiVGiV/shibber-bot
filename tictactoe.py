@@ -201,17 +201,3 @@ def numpad_input(prompt: str):
     else:
         matrix = [7, 8, 9, 4, 5, 6, 1, 2, 3]
         return matrix.index(x)
-
-
-# test_board = TicTacToe()
-# while not test_board.game_over:
-#     cpu_move = compute_step(test_board, 2)
-#     test_board.update(player=2, i=cpu_move)
-#     print(test_board)
-#     if not test_board.game_over:
-#         test_board.update(player=1, i=numpad_input("Enter location here: "))
-# win = test_board.check_win()
-# if win == -1:
-#     print("No one won!")
-# elif win == 1 or win == 2:
-#     print(f"Player {win} won!")

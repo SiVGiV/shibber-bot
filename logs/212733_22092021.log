@@ -1,0 +1,6 @@
+[21:27:36 22/09/21] SUCCESS | Bot Connected
+[21:28:12 22/09/21] EVENT | /imdb command detected in [865989456511107113:140496498939920384]
+[21:28:18 22/09/21] ERROR | Couldn't reply to /imdb. Error:400 Bad Request (error code: 50035): Invalid Form Body
+In components.0.components.0.url: Must be 512 or fewer in length. Scheme "magnet:?xt=urn:btih:6e88b3f25ba49d483d740a652bf013c341bc5373&dn=interstellar+%282014%29&tr=udp" is not supported. Scheme must be one of ('http', 'https', 'discord').
+In components.0.components.1.url: Must be 512 or fewer in length. Scheme "magnet:?xt=urn:btih:89599bf4dc369a3a8eca26411c5ccf922d78b486&dn=interstellar+%282014%29&tr=udp" is not supported. Scheme must be one of ('http', 'https', 'discord').
+In components.0.components.2.url: Must be 512 or fewer in length. Scheme "magnet:?xt=urn:btih:fa9773b96054338d1f1c10f2a4d2d9bd5a578b92&dn=interstellar+%282014%29&tr=udp" is not supported. Scheme must be one of ('http', 'https', 'discord').
