@@ -82,23 +82,27 @@ def list2str(var, max_items=1, join_str=", "):
         return str(var)
 
 
-def magnet_shorten(magnet: str):
+def magnet_shorten(token: str, magnet: str):
     """
     Shortens a torrent magnet link.
     :param magnet: (str) a magnet string
+    :param token: (str) the tinyurl api token
     :return: a shortened link
     """
-    api_address = "http://mgnet.me/api/create"
-    api_parameters = {"m": magnet}
+    api_address = "http://api.tinyurl.com/create?api_token=" + token
+    api_parameters = {
+        "url": magnet,
+        "domain": "tinyurl.com"
+        }
     try:
-        res = requests.get(api_address, api_parameters)
+        res = requests.post(api_address, api_parameters)
         res.raise_for_status()
     except Exception:
         raise NameError("Encountered an API error.")
     else:
         results = res.json()
-        if results["state"] == "success":
-            return results["shorturl"]
+        if results["code"] == 0:
+            return results["data"]["tiny_url"]
         else:
             raise NameError("API failed")
 
