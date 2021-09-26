@@ -760,7 +760,7 @@ async def _random_choices(ctx, **choices):
     for choice in choices:
         if i == selection:
             total_string += "`"
-        total_string += choice
+        total_string += choices[choice]
         if i == selection:
             total_string += "`"
         total_string += "\n"
