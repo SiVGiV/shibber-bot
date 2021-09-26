@@ -570,7 +570,7 @@ async def handle_watchlist_component(ctx):
     if ctx.custom_id == "watchlist_add":
         mov_id = ctx.origin_message.embeds[0].footer.text
         if not watchlist_db.contains((where("user_id") == ctx.author_id) & (where("film_id") == mov_id)):
-            watchlist_db.insert({"user_id": ctx.author_id, "film_id": mov_id, "guild_id": ctx.guild_id})
+            watchlist_db.insert({"user_id": ctx.author_id, "film_id": mov_id})
             await ctx.send("Movie added to your watchlist.", hidden=True)
         else:
             await ctx.send("Movie already on your watchlist.", hidden=True)
@@ -583,10 +583,13 @@ async def handle_watchlist_component(ctx):
             await ctx.send("Movie wasn't on your watchlist.", hidden=True)
     elif ctx.custom_id == "watchlist_list":
         mov_id = ctx.origin_message.embeds[0].footer.text
-        interested = watchlist_db.search((where("film_id") == mov_id) & (where("guild_id") == ctx.guild_id))
+        interested = watchlist_db.search(where("film_id") == mov_id)
         msg = "People interested in **" + ctx.origin_message.embeds[0].title + "**:\n"
         for item in interested:
-            msg += "<@" + str(item["user_id"]) + ">"
+            if ctx.guild.fetch_member(item["user_id"]) is not None:
+                msg += "<@" + str(item["user_id"]) + ">"
+            else:
+                interested.remove(item)
         msg = msg.replace("><", ">, <")
         if len(interested) > 0:
             await ctx.send(msg, hidden=True)
