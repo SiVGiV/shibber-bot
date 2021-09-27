@@ -130,7 +130,6 @@ async def youtube(ctx):
         await ctx.send(embed=embed)
     finally:
         log.success("/youtube: Handling finished")
-
 # ===========================/YOUTUBE===========================>>>
 
 
@@ -255,8 +254,6 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
         log.error("Failed to edit origin message for " + ctx.custom_id)
     else:
         log.success("Poll choice handling finished.")
-
-
 # ===========================/POLL==============================>>>
 
 
@@ -814,8 +811,6 @@ async def _random_numbers(ctx, **options):
                        f"{1 if 'min' not in options else options['min']}"
                        f" -> {options['max']} is **{', '.join(map(str, numbers))}**")
     log.success("/random numbers: handling finished")
-
-
 # ==========================/RANDOM==============================>>>
 
 
@@ -851,13 +846,10 @@ async def kessify(ctx, message):
             new_msg += message[start_ind:].upper()
     await ctx.send(new_msg)
     log.success("/kessify: command handled")
-
-
 # ==========================/KESSIFY=============================>>>
 
 
 # <<<=======================/CONVERT================================
-
 @slash.subcommand(
     base="convert",
     name="length",
@@ -1154,8 +1146,6 @@ async def _convert_currency(ctx, **options):
         return
     await ctx.send(f"{options['quantity']} {options['from'].upper()} = {result:.2f} {options['to'].upper()}")
     log.success("/convert currency handling finished")
-
-
 # ==========================/CONVERT=============================>>>
 
 
@@ -1306,8 +1296,6 @@ async def handle_tictactoe_component(ctx):
     msg_content += f"**<@{db_item['player' + str(db_item['turn'])]}>'s turn!**"
     await ctx.edit_origin(content=msg_content, components=board.get_buttons())
     log.success("Component action handled.")
-
-
 # =========================TICTACTOE:USER============================>>>
 
 
@@ -1331,8 +1319,6 @@ async def summon(ctx: MenuContext):
                                             label="Join their channel here!"))]
     await ctx.target_author.send(embed=embed, components=button)
     await ctx.send("Summon sent to <@" + str(ctx.target_author.id) + ">", hidden=True)
-
-
 # ==========================SUMMON:USER============================>>>
 
 
@@ -1343,8 +1329,6 @@ async def summon(ctx: MenuContext):
 async def send_a_heart(ctx: MenuContext):
     await ctx.target_author.send("Someone sent you a  ❤️")
     await ctx.send("Heart sent to <@" + str(ctx.target_author.id) + ">", hidden=True)
-
-
 # ==========================SEND LOVE:USER============================>>>
 
 
