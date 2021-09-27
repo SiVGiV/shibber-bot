@@ -1,5 +1,6 @@
 # System imports
 import asyncio
+import datetime
 import re
 import time
 import os
@@ -130,6 +131,8 @@ async def youtube(ctx):
         await ctx.send(embed=embed)
     finally:
         log.success("/youtube: Handling finished")
+
+
 # ===========================/YOUTUBE===========================>>>
 
 
@@ -254,6 +257,8 @@ async def handle_poll_component(ctx: discord_slash.ComponentContext):
         log.error("Failed to edit origin message for " + ctx.custom_id)
     else:
         log.success("Poll choice handling finished.")
+
+
 # ===========================/POLL==============================>>>
 
 
@@ -512,6 +517,8 @@ async def imdb(ctx, **options):
                     log.error("Couldn't reply to /imdb. Error:" + str(e))
                 else:
                     log.success("/imdb: Handling finished.")
+
+
 # ==========================/IMDB=================================>>>
 
 
@@ -592,6 +599,8 @@ async def handle_watchlist_component(ctx):
             await ctx.send(msg, hidden=True)
         else:
             await ctx.send("No one has added this movie to their watchlist (yet).", hidden=True)
+
+
 # ==========================/WATCHLIST============================>>>
 
 
@@ -638,6 +647,8 @@ async def anime(ctx, **options):
     embed.set_footer(text="ʸᵒᵘ ᶠᵘᶜᵏᶦⁿᵍ ʷᵉᵉᵇ")
     await ctx.send(embed=embed)
     log.success("/Anime: Handling finished")
+
+
 # ==========================/ANIME================================>>>
 
 
@@ -681,6 +692,8 @@ async def piratebay(ctx, **options):
     res_embeds.append(temp_embed)
     await ctx.send(embeds=res_embeds)
     log.success("/piratebay: handling finished")
+
+
 # ==========================/PIRATEBAY============================>>>
 
 
@@ -811,6 +824,8 @@ async def _random_numbers(ctx, **options):
                        f"{1 if 'min' not in options else options['min']}"
                        f" -> {options['max']} is **{', '.join(map(str, numbers))}**")
     log.success("/random numbers: handling finished")
+
+
 # ==========================/RANDOM==============================>>>
 
 
@@ -846,6 +861,8 @@ async def kessify(ctx, message):
             new_msg += message[start_ind:].upper()
     await ctx.send(new_msg)
     log.success("/kessify: command handled")
+
+
 # ==========================/KESSIFY=============================>>>
 
 
@@ -1146,7 +1163,84 @@ async def _convert_currency(ctx, **options):
         return
     await ctx.send(f"{options['quantity']} {options['from'].upper()} = {result:.2f} {options['to'].upper()}")
     log.success("/convert currency handling finished")
+
+
 # ==========================/CONVERT=============================>>>
+
+
+# <<<======================/TIMESTAMP=================================
+@slash.slash(name="timestamp",
+             description="Sends a timestamp (INPUT MUST BE UTC+0)",
+             guild_ids=_bot_values["slash_cmd_guilds"],
+             options=[
+                 manage_commands.create_option(
+                     name="year",
+                     description="Enter year",
+                     option_type=4,
+                     required=True
+                 ),
+                 manage_commands.create_option(
+                     name="month",
+                     description="Enter month",
+                     option_type=4,
+                     required=True
+                 ),
+                 manage_commands.create_option(
+                     name="day",
+                     description="Enter day",
+                     option_type=4,
+                     required=True
+                 ),
+                 manage_commands.create_option(
+                     name="hour",
+                     description="Enter hour (24h)",
+                     option_type=4,
+                     required=True
+                 ),
+                 manage_commands.create_option(
+                     name="minutes",
+                     description="Enter minutes",
+                     option_type=4,
+                     required=True
+                 )
+             ])
+async def timestamp(ctx, **options):
+    if not 1970 < options["year"] < 2030:
+        await ctx.send("Year not in valid range (1970 <= year < 2030).", hidden=True)
+        return
+    if not 1 <= options["month"] <= 12:
+        await ctx.send("Month not in valid range (1 <= month <= 12)", hidden=True)
+        return
+    if not 1 <= options["day"] <= 31:
+        await ctx.send("Day not in valid range (1 <= day <= 31)", hidden=True)
+        return
+    if not 0 <= options["hour"] <= 23:
+        await ctx.send("Hour not in valid range (0 <= hour <= 23)", hidden=True)
+        return
+    if not 0 <= options["minutes"] <= 59:
+        await ctx.send("Minutes not in valid range (0 <= minutes <= 59)", hidden=True)
+        return
+    try:
+        stamp = datetime.datetime(options["year"],
+                                  options["month"],
+                                  options["day"],
+                                  options["hour"] + 2,
+                                  options["minutes"],
+                                  0, 0)
+    except ValueError:
+        await ctx.send("Error in parsing date. Likely that the day chosen does not exist in that month.")
+        return
+    time_str = str(int(stamp.timestamp()))
+    embed = discord.Embed(title="Timestamps")
+    embed.add_field(name="Full - Short", value=f"<t:{time_str}:f> `<t:{time_str}:f>`", inline=False)
+    embed.add_field(name="Full - Long", value=f"<t:{time_str}:F> `<t:{time_str}:F>`", inline=False)
+    embed.add_field(name="Date - Short", value=f"<t:{time_str}:d> `<t:{time_str}:d>`", inline=False)
+    embed.add_field(name="Date - Long", value=f"<t:{time_str}:D> `<t:{time_str}:D>`", inline=False)
+    embed.add_field(name="Time - Short", value=f"<t:{time_str}:t> `<t:{time_str}:t>`", inline=False)
+    embed.add_field(name="Time - Long", value=f"<t:{time_str}:T> `<t:{time_str}:T>`", inline=False)
+    embed.add_field(name="Relative", value=f"<t:{time_str}:R> `<t:{time_str}:R>`", inline=False)
+    await ctx.send(embed=embed, hidden=True)
+# =========================/TIMESTAMP==============================>>>
 
 
 # <<<======================TICTACTOE:USER===============================
@@ -1296,6 +1390,8 @@ async def handle_tictactoe_component(ctx):
     msg_content += f"**<@{db_item['player' + str(db_item['turn'])]}>'s turn!**"
     await ctx.edit_origin(content=msg_content, components=board.get_buttons())
     log.success("Component action handled.")
+
+
 # =========================TICTACTOE:USER============================>>>
 
 
@@ -1319,6 +1415,8 @@ async def summon(ctx: MenuContext):
                                             label="Join their channel here!"))]
     await ctx.target_author.send(embed=embed, components=button)
     await ctx.send("Summon sent to <@" + str(ctx.target_author.id) + ">", hidden=True)
+
+
 # ==========================SUMMON:USER============================>>>
 
 
@@ -1329,6 +1427,8 @@ async def summon(ctx: MenuContext):
 async def send_a_heart(ctx: MenuContext):
     await ctx.target_author.send("Someone sent you a  ❤️")
     await ctx.send("Heart sent to <@" + str(ctx.target_author.id) + ">", hidden=True)
+
+
 # ==========================SEND LOVE:USER============================>>>
 
 
