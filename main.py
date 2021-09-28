@@ -339,22 +339,29 @@ async def imdb(ctx, **options):
 
                 if isinstance(temp_directors, list):
                     for person in temp_directors:
-                        directors.append(person2str(person))
+                        person_str = person2str(person)
+                        if not person_str == "":
+                            directors.append(person_str)
                 else:
                     directors = person2str(temp_directors)
 
                 if isinstance(temp_writers, list):
                     for person in temp_writers:
-                        writers.append(person2str(person))
+                        person_str = person2str(person)
+                        if not person_str == "":
+                            writers.append(person_str)
                 else:
                     writers = person2str(temp_writers)
 
                 if isinstance(temp_writers, list):
                     for person in temp_cast:
-                        cast.append(person2str(person))
+                        person_str = person2str(person)
+                        if not person_str == "":
+                            cast.append(person_str)
                 else:
                     cast = person2str(temp_cast)
-
+                print(f"{temp_writers=}")
+                print(f"{writers=}")
                 movie_info[-1].update({
                     "directors": list2str(directors, 3),
                     "writers": list2str(writers, 3),
@@ -368,8 +375,8 @@ async def imdb(ctx, **options):
                                                   f"{ellipsis_truncate(movie['plot'], 200)}",
                                       color=randint(0x000000, 0xffffff))
                 embed.set_thumbnail(url=movie['cover'])
-                embed.add_field(name="Directed by:", value=movie["directors"], inline=False)
-                embed.add_field(name="Written by:", value=movie["writers"], inline=False)
+                embed.add_field(name="Directed by:", value=movie["directors"], inline=True)
+                embed.add_field(name="Written by:", value=movie["writers"], inline=True)
                 embed.add_field(name="Cast:", value=movie["cast"], inline=False)
                 embed.set_footer(text=f"tt{movie['id']}")
                 embeds.append(embed)
@@ -474,19 +481,25 @@ async def imdb(ctx, **options):
 
                 if isinstance(temp_writers, list):
                     for person in temp_writers:
-                        writers.append(person2str(person))
+                        person_str = person2str(person)
+                        if not person_str == "":
+                            writers.append(person_str)
                 else:
                     writers = person2str(temp_writers)
 
                 if isinstance(temp_creators, list):
                     for person in temp_creators:
-                        creators.append(person2str(person))
+                        person_str = person2str(person)
+                        if not person_str == "":
+                            creators.append(person_str)
                 else:
                     creators = person2str(temp_creators)
 
                 if isinstance(temp_cast, list):
                     for person in temp_cast:
-                        cast.append(person2str(person))
+                        person_str = person2str(person)
+                        if not person_str == "":
+                            cast.append(person_str)
                 else:
                     cast = person2str(temp_cast)
 
