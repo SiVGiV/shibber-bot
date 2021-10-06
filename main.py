@@ -5,7 +5,7 @@ import re
 import time
 import os
 import json
-import requests
+import requests as http_request
 from dotenv import load_dotenv
 from datetime import datetime as dt
 from urllib.parse import quote_plus
@@ -402,7 +402,7 @@ async def imdb(ctx, **options):
                     )]
                 tor_buttons = []
                 try:
-                    res = requests.get("https://yts.mx/api/v2/list_movies.json", params={
+                    res = http_request.get("https://yts.mx/api/v2/list_movies.json", params={
                         "query_term": f"tt{movie['id']}"
                     }).json()
                 except Exception as e:
@@ -1247,7 +1247,7 @@ async def timestamp(ctx, **options):
         await ctx.send("Minutes not in valid range (0 <= minutes <= 59)", hidden=True)
         return
     url = "http://api.positionstack.com/v1/forward"
-    res = requests.get(url, {
+    res = http_request.get(url, {
         "access_key": os.getenv("POSITIONSTACK_TOKEN"),
         "query": options["timezone_location"],
         "timezone_module": 1
