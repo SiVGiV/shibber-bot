@@ -318,7 +318,8 @@ async def imdb(ctx, **options):
                                     hidden=True)
                     return
                 # skip iteration if 'tv movie' or 'movie'
-                if not movie["kind"] == "movie" and not movie["kind"] == "tv movie":
+                print(movie["kind"])
+                if not movie["kind"] == "movie":
                     continue
                 movie_info.append({
                     "title": none2str(movie["title"]),
