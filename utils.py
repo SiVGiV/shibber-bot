@@ -56,6 +56,8 @@ def ellipsis_truncate(st, max_len, mid_ellipsis=False):
     :param mid_ellipsis: True if you want the ellipsis in the middle, false if at the end
     :return: A truncated string
     """
+    if st is None:
+        return ""
     if len(st) > max_len:
         if mid_ellipsis:
             new_st = st[:max_len/2-2] + "..." + st[max_len/2+2:]

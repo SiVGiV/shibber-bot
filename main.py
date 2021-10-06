@@ -5,6 +5,7 @@ import re
 import time
 import os
 import json
+import requests
 from dotenv import load_dotenv
 from datetime import datetime as dt
 from urllib.parse import quote_plus
@@ -430,8 +431,13 @@ async def imdb(ctx, **options):
                                                        f"&dn={quote_plus(torrent_res['title_long'])}&{trackers}")
                                 ))
                 try:
-                    await ctx.send(embeds=embeds, components=[manage_components.create_actionrow(*watchlist_buttons),
-                                                              manage_components.create_actionrow(*tor_buttons)])
+                    if len(tor_buttons) > 0:
+                        await ctx.send(embeds=embeds, components=[
+                            manage_components.create_actionrow(*watchlist_buttons),
+                            *manage_components.spread_to_rows(*tor_buttons)
+                        ])
+                    else:
+                        await ctx.send(embeds=embeds)
                 except discord.DiscordException as e:
                     log.error("Couldn't reply to /imdb. Error:" + str(e))
                 else:
@@ -604,7 +610,7 @@ async def handle_watchlist_component(ctx):
         interested = watchlist_db.search(where("film_id") == mov_id)
         msg = "People interested in **" + ctx.origin_message.embeds[0].title + "**:\n"
         for item in interested:
-            if ctx.guild.fetch_member(item["user_id"]) is not None:
+            if await ctx.guild.fetch_member(item["user_id"]) is not None:
                 msg += "<@" + str(item["user_id"]) + ">"
             else:
                 interested.remove(item)
@@ -1184,7 +1190,7 @@ async def _convert_currency(ctx, **options):
 
 # <<<======================/TIMESTAMP=================================
 @slash.slash(name="timestamp",
-             description="Sends a timestamp (INPUT MUST BE UTC+0)",
+             description="Sends a timestamp (from the timezone in specified location)",
              guild_ids=_bot_values["slash_cmd_guilds"],
              options=[
                  manage_commands.create_option(
@@ -1216,6 +1222,12 @@ async def _convert_currency(ctx, **options):
                      description="Enter minutes",
                      option_type=4,
                      required=True
+                 ),
+                 manage_commands.create_option(
+                     name="timezone_location",
+                     description="Enter a location in your timezone",
+                     option_type=3,
+                     required=True
                  )
              ])
 async def timestamp(ctx, **options):
@@ -1234,18 +1246,40 @@ async def timestamp(ctx, **options):
     if not 0 <= options["minutes"] <= 59:
         await ctx.send("Minutes not in valid range (0 <= minutes <= 59)", hidden=True)
         return
+    url = "http://api.positionstack.com/v1/forward"
+    res = requests.get(url, {
+        "access_key": os.getenv("POSITIONSTACK_TOKEN"),
+        "query": options["timezone_location"],
+        "timezone_module": 1
+    }).json()
+    if "error" in res:
+        print(f"{res=}")
+        log.error("PositionStack error.")
+        await ctx.send("Problem finding timezone.", hidden=True)
+        return
+    elif "data" not in res:
+        log.error("res contains no error or data.")
+        await ctx.send("Problem finding timezone.", hidden=True)
+        return
+    else:
+        if "timezone_module" in res["data"][0]:
+            tz = res["data"][0]["timezone_module"]
+            print(tz)
+        else:
+            log.error("'timezone_module' not in res.")
+            await ctx.send("Problem finding timezone.", hidden=True)
+            return
     try:
-        stamp = datetime.datetime(options["year"],
-                                  options["month"],
-                                  options["day"],
-                                  options["hour"] + 2,
-                                  options["minutes"],
-                                  0, 0)
+        o = options
+        time_str = f"{o['day']:02}/{o['month']:02}/{o['year']} {o['hour']:02}:{o['minutes']:02} "\
+                   f"{tz['offset_string'].replace(':','')}"
+        print(time_str)
+        stamp = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M %z")
     except ValueError:
-        await ctx.send("Error in parsing date. Likely that the day chosen does not exist in that month.")
+        await ctx.send("Error in parsing date. Likely that the day chosen does not exist in that month.", hidden=True)
         return
     time_str = str(int(stamp.timestamp()))
-    embed = discord.Embed(title="Timestamps")
+    embed = discord.Embed(title="Timestamps", description="Copy the format you wish to use.")
     embed.add_field(name="Full - Short", value=f"<t:{time_str}:f> `<t:{time_str}:f>`", inline=False)
     embed.add_field(name="Full - Long", value=f"<t:{time_str}:F> `<t:{time_str}:F>`", inline=False)
     embed.add_field(name="Date - Short", value=f"<t:{time_str}:d> `<t:{time_str}:d>`", inline=False)

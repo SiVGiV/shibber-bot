@@ -7,3 +7,5 @@ colorama
 tpblite
 requests
 mal-api
+geopy
+tzwhere
