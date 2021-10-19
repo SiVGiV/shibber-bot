@@ -1438,8 +1438,6 @@ async def handle_tictactoe_component(ctx):
     msg_content += f"**<@{db_item['player' + str(db_item['turn'])]}>'s turn!**"
     await ctx.edit_origin(content=msg_content, components=board.get_buttons())
     log.success("Component action handled.")
-
-
 # =========================TICTACTOE:USER============================>>>
 
 
@@ -1463,8 +1461,6 @@ async def summon(ctx: MenuContext):
                                             label="Join their channel here!"))]
     await ctx.target_author.send(embed=embed, components=button)
     await ctx.send("Summon sent to <@" + str(ctx.target_author.id) + ">", hidden=True)
-
-
 # ==========================SUMMON:USER============================>>>
 
 
@@ -1475,8 +1471,6 @@ async def summon(ctx: MenuContext):
 async def send_a_heart(ctx: MenuContext):
     await ctx.target_author.send("Someone sent you a  ❤️")
     await ctx.send("Heart sent to <@" + str(ctx.target_author.id) + ">", hidden=True)
-
-
 # ==========================SEND LOVE:USER============================>>>
 
 
