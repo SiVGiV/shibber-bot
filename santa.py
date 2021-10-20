@@ -184,6 +184,7 @@ async def assign_chimneys(ctx):
     name="dearsanta",
     description="Send your Santa a message!",
     guild_ids=[wankbunker],
+    default_permission=False,
     options=[
         manage_commands.create_option(
             name="message",
@@ -210,6 +211,7 @@ async def dearsanta(ctx, message):
     name="hohoho",
     description="Send your target a message!",
     guild_ids=[wankbunker],
+    default_permission=False,
     options=[
         manage_commands.create_option(
             name="message",
