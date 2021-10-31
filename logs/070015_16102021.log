@@ -1,0 +1,13 @@
+[07:00:19 16/10/21] SUCCESS | Bot Connected
+[17:35:10 16/10/21] EVENT | /imdb command detected in [411510602448502784:140496498939920384]
+[17:35:18 16/10/21] SUCCESS | /imdb: Handling finished.
+[17:35:20 16/10/21] EVENT | Component event detected: [watchlist_add,msg:898942153823232062,channel:411510602448502784]
+[17:35:21 16/10/21] EVENT | Component event detected: [watchlist_add,msg:898942153823232062,channel:411510602448502784]
+[17:35:23 16/10/21] EVENT | Component event detected: [watchlist_list,msg:898942153823232062,channel:411510602448502784]
+[17:37:24 16/10/21] EVENT | Component event detected: [watchlist_add,msg:898942153823232062,channel:411510602448502784]
+[17:46:04 16/10/21] EVENT | Component event detected: [watchlist_add,msg:898942153823232062,channel:411510602448502784]
+[17:46:10 16/10/21] EVENT | Component event detected: [watchlist_list,msg:898942153823232062,channel:411510602448502784]
+[17:57:05 16/10/21] EVENT | Component event detected: [watchlist_list,msg:898942153823232062,channel:411510602448502784]
+[18:22:28 16/10/21] EVENT | /youtube command detected in [140496498939920384:140496498939920384]
+[18:22:30 16/10/21] SUCCESS | /youtube: Handling finished
+[18:51:00 16/10/21] EVENT | Component event detected: [watchlist_list,msg:898942153823232062,channel:411510602448502784]

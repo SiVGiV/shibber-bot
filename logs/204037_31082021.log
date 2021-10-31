@@ -1,7 +1,0 @@
-[20:40:40 31/08/21] SUCCESS | Bot Connected
-[21:04:57 31/08/21] EVENT | Component event detected: [poll_0,msg:882256424737058917,channel:140496498939920384]
-[21:04:57 31/08/21] EVENT | Poll choice detected.
-[21:04:58 31/08/21] SUCCESS | Poll choice handling finished.
-[21:06:01 31/08/21] EVENT | Component event detected: [poll_1,msg:882256424737058917,channel:140496498939920384]
-[21:06:01 31/08/21] EVENT | Poll choice detected.
-[21:06:01 31/08/21] ERROR | Failed to edit origin message for poll_1

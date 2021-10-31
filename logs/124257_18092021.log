@@ -1,4 +1,0 @@
-[12:43:00 18/09/21] SUCCESS | Bot Connected
-[12:43:09 18/09/21] EVENT | Component event detected: [tictactoe_4,msg:888721799955767356,channel:865989456511107113]
-[12:43:11 18/09/21] EVENT | Component event detected: [tictactoe_2,msg:888721799955767356,channel:865989456511107113]
-[12:43:11 18/09/21] EVENT | Player tried to play on opponent's turn. Ignoring

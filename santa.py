@@ -48,6 +48,7 @@ async def on_ready():
 @slash.slash(name="joinlist",
              description="Join this year's secret Santa event!",
              guild_ids=[wankbunker],
+             default_permission=False,
              options=[
                  manage_commands.create_option(
                      name="firstname",
@@ -104,6 +105,7 @@ async def joinlist(ctx, **address):
     name="leavelist",
     description="Leave the secret Santa event.",
     guild_ids=[wankbunker],
+    default_permission=False,
     options=[
         manage_commands.create_option(
             name="ireallywannaleave",
@@ -184,7 +186,6 @@ async def assign_chimneys(ctx):
     name="dearsanta",
     description="Send your Santa a message!",
     guild_ids=[wankbunker],
-    default_permission=False,
     options=[
         manage_commands.create_option(
             name="message",
@@ -211,7 +212,6 @@ async def dearsanta(ctx, message):
     name="hohoho",
     description="Send your target a message!",
     guild_ids=[wankbunker],
-    default_permission=False,
     options=[
         manage_commands.create_option(
             name="message",

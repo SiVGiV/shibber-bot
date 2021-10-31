@@ -1,0 +1,25 @@
+[19:00:17 19/09/21] SUCCESS | Bot Connected
+[20:11:27 19/09/21] EVENT | TicTacToe context action detected.
+[20:11:29 19/09/21] SUCCESS | TicTacToe game posted.
+[20:12:01 19/09/21] EVENT | Component event detected: [tictactoe_0,msg:889197013760110653,channel:889120609496338432]
+[20:12:02 19/09/21] SUCCESS | Component action handled.
+[20:12:09 19/09/21] EVENT | Component event detected: [tictactoe_4,msg:889197013760110653,channel:889120609496338432]
+[20:12:09 19/09/21] SUCCESS | Component action handled.
+[20:12:17 19/09/21] EVENT | Component event detected: [tictactoe_2,msg:889197013760110653,channel:889120609496338432]
+[20:12:18 19/09/21] SUCCESS | Component action handled.
+[20:12:21 19/09/21] EVENT | Component event detected: [tictactoe_1,msg:889197013760110653,channel:889120609496338432]
+[20:12:21 19/09/21] SUCCESS | Component action handled.
+[20:12:22 19/09/21] EVENT | Component event detected: [tictactoe_7,msg:889197013760110653,channel:889120609496338432]
+[20:12:22 19/09/21] SUCCESS | Component action handled.
+[20:12:28 19/09/21] EVENT | Component event detected: [tictactoe_8,msg:889197013760110653,channel:889120609496338432]
+[20:12:28 19/09/21] SUCCESS | Component action handled.
+[20:12:41 19/09/21] EVENT | Component event detected: [tictactoe_6,msg:889197013760110653,channel:889120609496338432]
+[20:12:41 19/09/21] SUCCESS | Component action handled.
+[20:12:46 19/09/21] EVENT | Component event detected: [tictactoe_3,msg:889197013760110653,channel:889120609496338432]
+[20:12:47 19/09/21] SUCCESS | Component action handled.
+[20:12:48 19/09/21] EVENT | Component event detected: [tictactoe_5,msg:889197013760110653,channel:889120609496338432]
+[20:12:48 19/09/21] SUCCESS | Game ended. Discarding.
+[20:12:49 19/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889197013760110653,channel:889120609496338432]
+[20:12:54 19/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889197013760110653,channel:889120609496338432]
+[22:30:33 19/09/21] EVENT | /youtube command detected in [140496498939920384:140496498939920384]
+[22:30:34 19/09/21] SUCCESS | /youtube: Handling finished

@@ -1,5 +1,0 @@
-[12:17:24 18/09/21] SUCCESS | Bot Connected
-[12:17:30 18/09/21] EVENT | Component event detected: [tictactoe_0,msg:888702513145061407,channel:865989456511107113]
-[12:17:30 18/09/21] ERROR | Component call from message not in DB.
-[12:17:45 18/09/21] EVENT | Component event detected: [tictactoe_8,msg:888715403923165195,channel:865989456511107113]
-[12:17:45 18/09/21] ERROR | Component call from message not in DB.
