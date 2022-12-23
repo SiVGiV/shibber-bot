@@ -98,7 +98,7 @@ async def joinlist(ctx, **address):
                     address["address1"] + "\n" + address["address2"] + "\n" + address["country"]+"```",
         color=0xF40000
     )
-    await ctx.send(embed=reply_embed, hidden=True)
+    await ctx.send(embed=reply_embed, ephemeral=True)
 
 
 @slash.slash(
@@ -119,14 +119,14 @@ async def leavelist(ctx, **options):
     if options["ireallywannaleave"]:
         removed = santa_db.remove(where("userID") == ctx.author_id)
         if len(removed) == 0:
-            await ctx.send("Seems you weren't in the list in the first place.", hidden=True)
+            await ctx.send("Seems you weren't in the list in the first place.", ephemeral=True)
         else:
-            await ctx.send("Sad to see you leave! Enjoy your holiday, hope you join us next year!", hidden=True)
+            await ctx.send("Sad to see you leave! Enjoy your holiday, hope you join us next year!", ephemeral=True)
     else:
         if santa_db.contains(where("userID") == ctx.author_id):
-            await ctx.send("Glad to have you with us!", hidden=True)
+            await ctx.send("Glad to have you with us!", ephemeral=True)
         else:
-            await ctx.send("It seems you're not yet in the list, use /joinlist to join!", hidden=True)
+            await ctx.send("It seems you're not yet in the list, use /joinlist to join!", ephemeral=True)
 
 
 @slash.slash(
@@ -150,9 +150,9 @@ async def assign_chimneys(ctx):
         random.shuffle(joined_santas)
         santa_list = find_list(joined_santas, [])
     if not santa_list:
-        await ctx.send("Can't find a no-repeat list.", hidden=True)
+        await ctx.send("Can't find a no-repeat list.", ephemeral=True)
     if len(santa_list) <= 1:
-        await ctx.send("Not enough people have joined!", hidden=True)
+        await ctx.send("Not enough people have joined!", ephemeral=True)
         return
     for i in range(len(santa_list)):
         # print(f"{santa_list[i] = }")
@@ -179,7 +179,7 @@ async def assign_chimneys(ctx):
         santa_db.update({"santaID": giver["userID"]}, where("userID") == receiver["userID"])
         santa_db.update({"received": False}, where("userID") == receiver["userID"])
         await user.send(embed=embed)
-    await ctx.send("Santa list sent!", hidden=True)
+    await ctx.send("Santa list sent!", ephemeral=True)
 
 
 @slash.slash(
@@ -199,13 +199,13 @@ async def dearsanta(ctx, message):
     receiver = santa_db.get(where("userID") == ctx.author_id)
     santa = await client.fetch_user(int(receiver["santaID"]))
     if not santa:
-        await ctx.send("Couldn't find santa - Report the problem to Siv.", hidden=True)
+        await ctx.send("Couldn't find santa - Report the problem to Siv.", ephemeral=True)
         log.error(f"Couldn't find {receiver['firstName']}'s santa.")
         return
     embed = discord.Embed(title=f"You have a message from {receiver['firstName']}:", description=message,
                           color=0xf50000)
     await santa.send(embed=embed)
-    await ctx.send("Message sent to Santa. Rudolph will see that it gets to him.", hidden=True)
+    await ctx.send("Message sent to Santa. Rudolph will see that it gets to him.", ephemeral=True)
 
 
 @slash.slash(
@@ -225,13 +225,13 @@ async def hohoho(ctx, message):
     santa = santa_db.get(where("santaID") == ctx.author_id)
     receiver = await client.fetch_user(int(santa["userID"]))
     if not receiver:
-        await ctx.send("Couldn't find target - Report the problem to Siv.", hidden=True)
+        await ctx.send("Couldn't find target - Report the problem to Siv.", ephemeral=True)
         log.error(f"Couldn't find {santa['firstName']}'s receiver.")
         return
     embed = discord.Embed(title=f"You have a message from Santa:", description=message,
                           color=0xf50000)
     await receiver.send(embed=embed)
-    await ctx.send(f"Message sent to {santa['firstName']}.", hidden=True)
+    await ctx.send(f"Message sent to {santa['firstName']}.", ephemeral=True)
 
 
 def find_list(remaining, solution):
