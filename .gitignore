@@ -4,3 +4,5 @@ venv
 databases
 __pycache__
 bot-values.json
+/log
+/santa_log
