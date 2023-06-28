@@ -1,4 +1,0 @@
-[17:02:11 25/09/21] SUCCESS | Bot Connected
-[17:02:21 25/09/21] EVENT | /imdb command detected in [865989456511107113:140496498939920384]
-[17:02:28 25/09/21] SUCCESS | /imdb: Handling finished.
-[17:02:31 25/09/21] EVENT | Component event detected: [watchlist_add,msg:891323753986945035,channel:865989456511107113]

@@ -1,6 +1,0 @@
-[07:00:19 20/09/21] SUCCESS | Bot Connected
-[15:18:09 20/09/21] EVENT | TicTacToe context action detected.
-[15:18:10 20/09/21] SUCCESS | TicTacToe game posted.
-[15:18:11 20/09/21] EVENT | Component event detected: [tictactoe_stop,msg:889485586971377694,channel:865989456511107113]
-[15:18:11 20/09/21] SUCCESS | Game stopped.
-[15:18:12 20/09/21] EVENT | Component event detected: [tictactoe_restart,msg:889485586971377694,channel:865989456511107113]
