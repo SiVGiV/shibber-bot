@@ -12,7 +12,7 @@ from colorama import init, Fore
 
 init()
 load_dotenv()
-wankbunker = 140496498939920384
+wankbunker = _____
 client = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
 main_db = TinyDB("./databases/main.db")
@@ -135,7 +135,7 @@ async def leavelist(ctx, **options):
     guild_ids=[wankbunker],
     default_permission=False,
     permissions={
-        wankbunker: [manage_commands.create_permission(140495238476070912, SlashCommandPermissionType.USER, True)]
+        wankbunker: [manage_commands.create_permission(_____, SlashCommandPermissionType.USER, True)]
     }
 )
 async def assign_chimneys(ctx):

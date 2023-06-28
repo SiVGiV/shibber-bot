@@ -113,7 +113,7 @@ async def youtube(ctx):
         "max_age": 86400,
         "max_uses": 0,
         "temporary": False,
-        "target_application_id": "880218394199220334",
+        "target_application_id": "______",
         "target_type": 2
     }
     try:
